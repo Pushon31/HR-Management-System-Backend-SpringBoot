@@ -1,11 +1,16 @@
 package com.garmentmanagement.garmentmanagement.DTO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class EmployeeDto {
     private Long id;
     private String firstName;
@@ -16,7 +21,9 @@ public class EmployeeDto {
     private String bankAccountNumber;
     private String gender;
     private String maritalStatus;
-    private String department;
+    private Long departmentId;
+    @JsonIgnore
+    private String departmentName;
     private LocalDate birthDate;
     private LocalDate joinDate;
     private String phoneNumber;
@@ -27,6 +34,8 @@ public class EmployeeDto {
     private String shift;
     private BigDecimal basicSalary;
     private String photoUrl;
-    private BigDecimal salary;
-
+    private Long managerId;
+    @JsonIgnore
+    private String managerName;
+    private String status;
 }

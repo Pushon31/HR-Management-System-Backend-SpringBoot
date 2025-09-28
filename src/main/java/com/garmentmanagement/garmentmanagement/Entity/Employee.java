@@ -1,6 +1,5 @@
 package com.garmentmanagement.garmentmanagement.Entity;
 
-import com.garmentmanagement.garmentmanagement.Base.BaseAuditEntity;
 import com.garmentmanagement.garmentmanagement.Base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -19,6 +18,22 @@ import java.time.LocalDate;
 @Table(name = "employees")
 public class Employee extends BaseEntity {
 
+    public enum Gender {
+        MALE, FEMALE, OTHER
+    }
+
+    public enum MaritalStatus {
+        SINGLE, MARRIED, DIVORCED, WIDOWED
+    }
+
+    public enum EmployeeType {
+        FULL_TIME, PART_TIME, CONTRACT, INTERN, PROBATION
+    }
+
+    public enum EmployeeStatus {
+        ACTIVE, INACTIVE, TERMINATED, SUSPENDED, ON_LEAVE
+    }
+
     @Column(nullable = false, length = 50)
     private String firstName;
 
@@ -26,7 +41,7 @@ public class Employee extends BaseEntity {
     private String lastName;
 
     @Column(unique = true, nullable = false, length = 30)
-    private String employeeId;          // নিজের জেনারেট করা কোড (HR/EMP-001 টাইপ)
+    private String employeeId;
 
     @Column(unique = true, nullable = false, length = 100)
     private String email;
@@ -37,20 +52,19 @@ public class Employee extends BaseEntity {
     @Column(length = 40)
     private String bankAccountNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 10)
-    private String gender;              // Enum করলেও ভালো (MALE, FEMALE, OTHER)
+    private Gender gender;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private String maritalStatus;       // Enum করলেও ভালো (SINGLE, MARRIED, etc.)
-
-
+    private MaritalStatus maritalStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private Department departmentId;
-
+    @JoinColumn(name = "department_id")
+    private Department department;
 
     private LocalDate birthDate;
-
     private LocalDate joinDate;
 
     @Column(length = 20)
@@ -65,17 +79,23 @@ public class Employee extends BaseEntity {
     @Column(length = 50)
     private String designation;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 30)
-    private String employeeType;        // Enum করলেও ভালো (FULL_TIME, PART_TIME, etc.)
+    private EmployeeType employeeType;
 
     @Column(length = 30)
-    private String shift;               // Example: DAY, NIGHT
+    private String shift;
 
     @Column(precision = 12, scale = 2)
     private BigDecimal basicSalary;
 
     private String photoUrl;
 
-    @Column(precision = 12, scale = 2)
-    private BigDecimal salary;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private Employee manager;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private EmployeeStatus status = EmployeeStatus.ACTIVE;
 }

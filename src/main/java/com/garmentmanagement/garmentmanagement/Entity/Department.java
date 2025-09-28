@@ -50,6 +50,6 @@ public class Department extends BaseEntity {
     private LocalDate establishedDate;   // প্রতিষ্ঠার তারিখ
 
 
-    @OneToMany(mappedBy = "departmentId", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = false)
     private Set<Employee> employees = new HashSet<>();
 }
