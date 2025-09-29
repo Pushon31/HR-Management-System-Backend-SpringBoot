@@ -17,39 +17,39 @@ import java.util.Set;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Table (name = "department")
+@Table(name = "departments")
 public class Department extends BaseEntity {
+
+    // ✅ Enums inside Entity
+    public enum DepartmentStatus {
+        ACTIVE, INACTIVE, SUSPENDED
+    }
+
     @Column(nullable = false, unique = true, length = 100)
-    private String name;                 // যেমন: "Knitting", "Finishing", "HR"
+    private String name;
 
     @Column(nullable = false, unique = true, length = 20)
-    private String code;                 // যেমন: HR-01, ACC-02
+    private String code;
 
-    @OneToOne
-    @JoinColumn(name = "head_manager_id")
-    private Manager headOfDepartment;
-
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "department_head_id")
+    private Employee departmentHead;
 
     @Column(length = 255)
     private String description;
 
     @Column(length = 100)
-    private String location;             // কোন বিল্ডিং বা ফ্লোর
-
-
-    private Integer totalEmployees;      // এই ডিপার্টমেন্টে কর্মীর সংখ্যা
+    private String location;
 
     @Column(precision = 15, scale = 2)
-    private BigDecimal budget;           // ডিপার্টমেন্ট বাজেট
+    private BigDecimal budget;
 
-
+    @Enumerated(EnumType.STRING)
     @Column(length = 20)
-    private String status;               // ACTIVE, INACTIVE
+    private DepartmentStatus status = DepartmentStatus.ACTIVE;
 
-    private LocalDate establishedDate;   // প্রতিষ্ঠার তারিখ
+    private LocalDate establishedDate;
 
-
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<Employee> employees = new HashSet<>();
 }
