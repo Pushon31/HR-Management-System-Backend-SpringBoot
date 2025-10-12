@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Repository
@@ -40,4 +41,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     @Query("SELECT e FROM Employee e WHERE e.manager.id = :managerId AND e.designation = :designation")
     List<Employee> findSubordinatesByManagerAndDesignation(Long managerId, String designation);
+
+    @Query("SELECT e.workType, COUNT(e) FROM Employee e GROUP BY e.workType")
+    Map<Employee.EmployeeWorkType, Long> countEmployeesByWorkType();
 }

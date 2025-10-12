@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,7 +53,7 @@ public class EmployeeServiceImplementation implements EmployeeService {
         employee.setDesignation(employeeDto.getDesignation());
         employee.setShift(employeeDto.getShift());
         employee.setBasicSalary(employeeDto.getBasicSalary());
-        employee.setPhotoUrl(employeeDto.getPhotoUrl());
+        employee.setProfilePic(employeeDto.getProfilePic());
 
         // ✅ FIX: Check for valid departmentId (not null and > 0)
         if (employeeDto.getDepartmentId() != null && employeeDto.getDepartmentId() > 0) {
@@ -123,7 +124,7 @@ public class EmployeeServiceImplementation implements EmployeeService {
         existing.setDesignation(employeeDto.getDesignation());
         existing.setShift(employeeDto.getShift());
         existing.setBasicSalary(employeeDto.getBasicSalary());
-        existing.setPhotoUrl(employeeDto.getPhotoUrl());
+        existing.setProfilePic(employeeDto.getProfilePic());
 
         // ✅ FIX: Update department only if valid ID
         if (employeeDto.getDepartmentId() != null && employeeDto.getDepartmentId() > 0) {
@@ -257,6 +258,10 @@ public class EmployeeServiceImplementation implements EmployeeService {
                 .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
         employeeRepository.delete(employee);
     }
+    @Override
+    public Map<Employee.EmployeeWorkType, Long> getEmployeeWorkTypeStats() {
+        return employeeRepository.countEmployeesByWorkType();
+    }
 
     // ✅ Use ModelMapper only for basic field mapping in convertToDto
     private EmployeeDto convertToDto(Employee employee) {
@@ -286,7 +291,13 @@ public class EmployeeServiceImplementation implements EmployeeService {
         if (employee.getStatus() != null) {
             dto.setStatus(employee.getStatus().name());
         }
+        // ✅ NEW: Work Type mapping
+        if (employee.getWorkType() != null) {
+            dto.setWorkType(employee.getWorkType().name());
+        }
+
 
         return dto;
     }
+
 }

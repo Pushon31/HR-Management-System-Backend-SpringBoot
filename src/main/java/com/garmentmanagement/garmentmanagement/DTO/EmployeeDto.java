@@ -1,6 +1,5 @@
 package com.garmentmanagement.garmentmanagement.DTO;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,7 +21,6 @@ public class EmployeeDto {
     private String gender;
     private String maritalStatus;
     private Long departmentId;
-    @JsonIgnore
     private String departmentName;
     private LocalDate birthDate;
     private LocalDate joinDate;
@@ -33,9 +31,11 @@ public class EmployeeDto {
     private String employeeType;
     private String shift;
     private BigDecimal basicSalary;
-    private String photoUrl;
+    private String profilePic;
     private Long managerId;
-    @JsonIgnore
     private String managerName;
     private String status;
+
+    // ✅ NEW: Work Type Field
+    private String workType;
 }

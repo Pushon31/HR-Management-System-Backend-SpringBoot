@@ -4,20 +4,21 @@ import com.garmentmanagement.garmentmanagement.Base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@EqualsAndHashCode(callSuper = true)
+@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-@Entity
 @Table(name = "employees")
 public class Employee extends BaseEntity {
 
+    // Existing Enums
     public enum Gender {
         MALE, FEMALE, OTHER
     }
@@ -34,6 +35,12 @@ public class Employee extends BaseEntity {
         ACTIVE, INACTIVE, TERMINATED, SUSPENDED, ON_LEAVE
     }
 
+    // ✅ NEW: Employee Work Type Enum
+    public enum EmployeeWorkType {
+        ONSITE, REMOTE, HYBRID
+    }
+
+    // Personal Information
     @Column(nullable = false, length = 50)
     private String firstName;
 
@@ -52,6 +59,7 @@ public class Employee extends BaseEntity {
     @Column(length = 40)
     private String bankAccountNumber;
 
+    // Enums
     @Enumerated(EnumType.STRING)
     @Column(length = 10)
     private Gender gender;
@@ -60,13 +68,35 @@ public class Employee extends BaseEntity {
     @Column(length = 20)
     private MaritalStatus maritalStatus;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private EmployeeType employeeType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private EmployeeStatus status = EmployeeStatus.ACTIVE;
+
+    // ✅ NEW: Work Type Field
+    @Enumerated(EnumType.STRING)
+    @Column(name = "work_type", length = 20)
+    private EmployeeWorkType workType = EmployeeWorkType.ONSITE;
+
+    // Relationships
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
     private Department department;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "manager_id")
+    private Employee manager;
+
+    // Dates
     private LocalDate birthDate;
+
+    @Column(name = "join_date")
     private LocalDate joinDate;
 
+    // Contact Information
     @Column(length = 20)
     private String phoneNumber;
 
@@ -76,12 +106,9 @@ public class Employee extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String address;
 
+    // Employment Details
     @Column(length = 50)
     private String designation;
-
-    @Enumerated(EnumType.STRING)
-    @Column(length = 30)
-    private EmployeeType employeeType;
 
     @Column(length = 30)
     private String shift;
@@ -89,13 +116,6 @@ public class Employee extends BaseEntity {
     @Column(precision = 12, scale = 2)
     private BigDecimal basicSalary;
 
-    private String photoUrl;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manager_id")
-    private Employee manager;
-
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private EmployeeStatus status = EmployeeStatus.ACTIVE;
+    @Column(name = "profile_pic")
+    private String profilePic;
 }

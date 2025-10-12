@@ -5,6 +5,7 @@ import com.garmentmanagement.garmentmanagement.Entity.Employee;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 
 public interface EmployeeService {
@@ -24,5 +25,6 @@ public interface EmployeeService {
     void assignManager(Long employeeId, Long managerId);
     EmployeeDto getEmployeeManager(Long employeeId);
     List<EmployeeDto> getEmployeesWithoutManager();
+    Map<Employee.EmployeeWorkType, Long> getEmployeeWorkTypeStats();
 
 }
