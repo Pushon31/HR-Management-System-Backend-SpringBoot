@@ -1,6 +1,7 @@
 package com.garmentmanagement.garmentmanagement.Repository;
 
 import com.garmentmanagement.garmentmanagement.Entity.Department;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -22,9 +23,9 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     // Filter methods
     List<Department> findByStatus(Department.DepartmentStatus status);
 
-    // Custom query for departments with employees count
-    @Query("SELECT d FROM Department d LEFT JOIN FETCH d.employees")
-    List<Department> findAllWithEmployees();
+//    // Custom query for departments with employees count
+//    @Query("SELECT d FROM Department d LEFT JOIN FETCH d.employees")
+//    List<Department> findAllWithEmployees();
 
     // Find departments by location
     List<Department> findByLocationContainingIgnoreCase(String location);
@@ -32,4 +33,9 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     // Find department by department head
     @Query("SELECT d FROM Department d WHERE d.departmentHead.id = :employeeId")
     Optional<Department> findByDepartmentHeadId(Long employeeId);
+
+
+    @EntityGraph(attributePaths = {"employees"})
+    @Query("SELECT d FROM Department d")
+    List<Department> findAllWithEmployees();
 }

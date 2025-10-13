@@ -15,8 +15,8 @@ public class AttendanceDto {
     private String employeeId;        // Business ID (EMP-001)
     private String employeeName;
     private LocalDate attendanceDate;
-    private LocalTime checkInTime;
-    private LocalTime checkOutTime;
+    private LocalTime checkinTime;
+    private LocalTime checkoutTime;
     private String status;
     private Double totalHours;
     private String remarks;

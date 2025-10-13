@@ -10,9 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 
-    @RestController
+@RestController
     @RequestMapping("/api/employees")
     @RequiredArgsConstructor
     public class EmployeeController {
@@ -75,6 +76,27 @@ import java.util.List;
         public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
             employeeService.deleteEmployee(id);
             return ResponseEntity.ok().build();
+        }
+
+        // ✅ Add these missing endpoints in EmployeeController:
+
+        @GetMapping("/status/{status}")
+        public ResponseEntity<List<EmployeeDto>> getEmployeesByStatus(@PathVariable String status) {
+            Employee.EmployeeStatus statusEnum = Employee.EmployeeStatus.valueOf(status.toUpperCase());
+            List<EmployeeDto> employees = employeeService.getEmployeesByStatus(statusEnum);
+            return ResponseEntity.ok(employees);
+        }
+
+        @GetMapping("/manager/{managerId}/team")
+        public ResponseEntity<List<EmployeeDto>> getManagerTeam(@PathVariable Long managerId) {
+            List<EmployeeDto> employees = employeeService.getManagerTeam(managerId);
+            return ResponseEntity.ok(employees);
+        }
+
+        @GetMapping("/worktype/stats")
+        public ResponseEntity<Map<Employee.EmployeeWorkType, Long>> getWorkTypeStats() {
+            Map<Employee.EmployeeWorkType, Long> stats = employeeService.getEmployeeWorkTypeStats();
+            return ResponseEntity.ok(stats);
         }
 
 

@@ -66,7 +66,7 @@ public class AttendanceServiceImplementation implements AttendanceService {
                 .orElseThrow(()->new RuntimeException("Check-in not found for today."));
 
 
-        if (attendance.getCheckinTime() != null){
+        if (attendance.getCheckoutTime() != null) {
             throw new RuntimeException("Employee already checked-out today.");
         }
 
@@ -262,8 +262,8 @@ public class AttendanceServiceImplementation implements AttendanceService {
         // ✅ Manual mapping for ALL fields
         dto.setId(attendance.getId());
         dto.setAttendanceDate(attendance.getAttendanceDate());
-        dto.setCheckInTime(attendance.getCheckinTime());  // ✅ This was missing!
-        dto.setCheckOutTime(attendance.getCheckoutTime()); // ✅ This was missing!
+        dto.setCheckinTime(attendance.getCheckinTime());  // ✅ This was missing!
+        dto.setCheckoutTime(attendance.getCheckoutTime()); // ✅ This was missing!
         dto.setTotalHours(attendance.getTotalHours());
         dto.setRemarks(attendance.getRemarks());
 
