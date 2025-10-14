@@ -5,13 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.YearMonth;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PayrollDto {
+public class SalaryStructureDto {
     private Long id;
 
     // Employee Info
@@ -21,26 +19,17 @@ public class PayrollDto {
     private String designation;
     private String departmentName;
 
-    // Pay Period
-    private YearMonth payPeriod;
-    private LocalDate payDate;
-
-    // Salary Breakdown
+    // Core Salary Components
     private BigDecimal basicSalary;
-    private BigDecimal totalAllowances;
-    private BigDecimal overtimePay;
-    private BigDecimal bonus;
-    private BigDecimal taxDeduction;
-    private BigDecimal otherDeductions;
+    private BigDecimal houseRent;
+    private BigDecimal medicalAllowance;
+    private BigDecimal transportAllowance;
+    private BigDecimal otherAllowances;
+    private BigDecimal totalDeductions;
 
-    // Calculated Amounts
+    // Calculated Fields
     private BigDecimal grossSalary;
     private BigDecimal netSalary;
 
-    // Attendance
-    private Integer workingDays;
-    private Integer presentDays;
-
     private String status;
-    private String remarks;
 }
