@@ -27,6 +27,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     List<Attendance> findByStatus(Attendance.AttendanceStatus status);
     List<Attendance> findByAttendanceDateAndStatus(LocalDate date, Attendance.AttendanceStatus status);
 
+    List<Attendance> findByAttendanceDateBetween(LocalDate attendanceDateAfter, LocalDate attendanceDateBefore);
+
     // ❌ REMOVE THIS - causing the error
     // Optional<Attendance> findByEmployeeId(String employeeId);
 }
