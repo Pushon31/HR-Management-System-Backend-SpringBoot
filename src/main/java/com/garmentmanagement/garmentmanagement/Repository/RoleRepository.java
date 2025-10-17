@@ -1,8 +1,13 @@
 package com.garmentmanagement.garmentmanagement.Repository;
 
-import com.garmentmanagement.garmentmanagement.Entity.Roles;
+import com.garmentmanagement.garmentmanagement.Entity.Role;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-public interface RoleRepository extends JpaRepository<Roles,Long> {
+import java.util.Optional;
 
+@Repository
+public interface RoleRepository extends JpaRepository<Role, Long> {
+    Optional<Role> findByName(String name);
+    Boolean existsByName(String name);
 }
