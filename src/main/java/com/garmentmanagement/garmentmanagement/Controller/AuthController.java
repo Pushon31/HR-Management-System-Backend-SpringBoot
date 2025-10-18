@@ -3,8 +3,10 @@ package com.garmentmanagement.garmentmanagement.Controller;
 import com.garmentmanagement.garmentmanagement.DTO.LoginRequest;
 import com.garmentmanagement.garmentmanagement.DTO.SignupRequest;
 import com.garmentmanagement.garmentmanagement.DTO.JwtResponse;
+import com.garmentmanagement.garmentmanagement.Entity.Employee;
 import com.garmentmanagement.garmentmanagement.Entity.Role;
 import com.garmentmanagement.garmentmanagement.Entity.User;
+import com.garmentmanagement.garmentmanagement.Repository.EmployeeRepository;
 import com.garmentmanagement.garmentmanagement.Repository.RoleRepository;
 import com.garmentmanagement.garmentmanagement.Repository.UserRepository;
 import com.garmentmanagement.garmentmanagement.Security.JwtTokenUtil;
@@ -18,6 +20,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,6 +36,7 @@ public class AuthController {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenUtil jwtTokenUtil;
+    private final EmployeeRepository employeeRepository;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
@@ -77,15 +81,18 @@ public class AuthController {
         user.setFullName(signUpRequest.getFullName());
         user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
 
-        // Set roles
+        // ✅ FIX: Set default role to EMPLOYEE if no roles provided
         Set<String> strRoles = signUpRequest.getRoles();
         Set<Role> roles = new HashSet<>();
 
-        if (strRoles == null) {
+        if (strRoles == null || strRoles.isEmpty()) {
             // Default role: EMPLOYEE
             Role employeeRole = roleRepository.findByName(Role.ROLE_EMPLOYEE)
                     .orElseThrow(() -> new RuntimeException("Error: Employee role not found."));
             roles.add(employeeRole);
+
+            // ✅ AUTO-CREATE EMPLOYEE RECORD
+            createEmployeeRecord(signUpRequest, user);
         } else {
             strRoles.forEach(role -> {
                 switch (role) {
@@ -118,10 +125,39 @@ public class AuthController {
         }
 
         user.setRoles(roles);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
         return ResponseEntity.ok("User registered successfully!");
     }
+
+    // ✅ NEW METHOD: Auto-create employee record
+    private void createEmployeeRecord(SignupRequest signUpRequest, User user) {
+        try {
+            // Generate unique employee ID
+            String employeeId = "EMP" + System.currentTimeMillis();
+
+            // Create employee entity
+            Employee employee = new Employee();
+            employee.setFirstName(signUpRequest.getFullName().split(" ")[0]); // First word as first name
+            employee.setLastName(signUpRequest.getFullName().contains(" ") ?
+                    signUpRequest.getFullName().substring(signUpRequest.getFullName().indexOf(" ") + 1) :
+                    ""); // Rest as last name
+            employee.setEmployeeId(employeeId);
+            employee.setEmail(signUpRequest.getEmail());
+            employee.setStatus(Employee.EmployeeStatus.ACTIVE);
+            employee.setWorkType(Employee.EmployeeWorkType.ONSITE);
+            employee.setEmployeeType(Employee.EmployeeType.FULL_TIME);
+            employee.setJoinDate(LocalDate.now());
+
+            // Save employee
+            employeeRepository.save(employee);
+
+            System.out.println("✅ Auto-created employee record for: " + signUpRequest.getEmail());
+        } catch (Exception e) {
+            System.err.println("❌ Failed to auto-create employee record: " + e.getMessage());
+        }
+    }
+
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser() {

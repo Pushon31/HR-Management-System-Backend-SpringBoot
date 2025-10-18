@@ -38,7 +38,7 @@ public class DataLoader implements CommandLineRunner {
         if (!roleRepository.existsByName(name)) {
             Role role = new Role(name, description);
             roleRepository.save(role);
-            System.out.println("Created role: " + name);
+            System.out.println("✅ Created role: " + name);
         }
     }
 
@@ -55,7 +55,7 @@ public class DataLoader implements CommandLineRunner {
             admin.setRoles(Set.of(adminRole));
 
             userRepository.save(admin);
-            System.out.println("Default admin user created: admin / admin123");
+            System.out.println("✅ Default admin user created: admin / admin123");
         }
     }
 }
