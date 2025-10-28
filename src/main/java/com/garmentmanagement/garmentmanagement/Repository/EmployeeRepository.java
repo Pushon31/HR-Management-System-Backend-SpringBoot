@@ -4,6 +4,7 @@ import com.garmentmanagement.garmentmanagement.Entity.Employee;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -42,6 +43,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     @Query("SELECT e FROM Employee e WHERE e.manager.id = :managerId AND e.designation = :designation")
     List<Employee> findSubordinatesByManagerAndDesignation(Long managerId, String designation);
 
-    @Query("SELECT e.workType, COUNT(e) FROM Employee e GROUP BY e.workType")
+    // ✅ FIX: Handle null workType values
+    @Query("SELECT e.workType, COUNT(e) FROM Employee e WHERE e.workType IS NOT NULL GROUP BY e.workType")
     Map<Employee.EmployeeWorkType, Long> countEmployeesByWorkType();
+
+
+
+
+    @Query("SELECT COUNT(e) FROM Employee e WHERE e.department.id = :departmentId")
+    Integer countByDepartmentId(@Param("departmentId") Long departmentId);
 }

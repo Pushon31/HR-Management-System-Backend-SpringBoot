@@ -182,8 +182,10 @@ public class AnalyticsServiceImplementation implements AnalyticsService {
 
         List<Department> departments = departmentRepository.findAll();
         for (Department department : departments) {
-            int employeeCount = department.getEmployees().size();
-            departmentStats.put(department.getName(), employeeCount);
+            Integer employeeCount = employeeRepository.countByDepartmentId(department.getId());
+            int count = (employeeCount != null) ? employeeCount : 0;
+
+            departmentStats.put(department.getName(), count);
         }
 
         return departmentStats;

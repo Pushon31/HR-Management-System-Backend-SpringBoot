@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -66,12 +67,16 @@ public class AuthController {
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest signUpRequest) {
         // Check if username exists
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            return ResponseEntity.badRequest().body("Error: Username is already taken!");
+            return ResponseEntity.badRequest().body(
+                    Map.of("message", "Error: Username is already taken!")
+            );
         }
 
         // Check if email exists
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity.badRequest().body("Error: Email is already in use!");
+            return ResponseEntity.badRequest().body(
+                    Map.of("message", "Error: Email is already in use!")
+            );
         }
 
         // Create new user
@@ -81,7 +86,7 @@ public class AuthController {
         user.setFullName(signUpRequest.getFullName());
         user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
 
-        // ✅ FIX: Set default role to EMPLOYEE if no roles provided
+        // Set roles
         Set<String> strRoles = signUpRequest.getRoles();
         Set<Role> roles = new HashSet<>();
 
@@ -91,7 +96,7 @@ public class AuthController {
                     .orElseThrow(() -> new RuntimeException("Error: Employee role not found."));
             roles.add(employeeRole);
 
-            // ✅ AUTO-CREATE EMPLOYEE RECORD
+            // Auto-create employee record
             createEmployeeRecord(signUpRequest, user);
         } else {
             strRoles.forEach(role -> {
@@ -123,11 +128,15 @@ public class AuthController {
                 }
             });
         }
-
         user.setRoles(roles);
         User savedUser = userRepository.save(user);
 
-        return ResponseEntity.ok("User registered successfully!");
+        // ✅ FIX: Return JSON for success response too
+        return ResponseEntity.ok(Map.of(
+                "message", "User registered successfully!",
+                "userId", savedUser.getId(),
+                "username", savedUser.getUsername()
+        ));
     }
 
     // ✅ NEW METHOD: Auto-create employee record

@@ -119,7 +119,7 @@ public class DepartmentServiceImplementation implements DepartmentService {
 
     @Override
     public List<DepartmentDto> getAllDepartments() {
-        return departmentRepository.findAll()
+        return departmentRepository.findAllWithDepartmentHead()
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
@@ -165,10 +165,9 @@ public class DepartmentServiceImplementation implements DepartmentService {
 
     @Override
     public Integer getEmployeeCount(Long departmentId) {
-        Department department = departmentRepository.findById(departmentId)
-                .orElseThrow(() -> new RuntimeException("Department not found with id: " + departmentId));
-
-        return department.getEmployees().size();
+        // ✅ FIX: Use repository method instead of department.getEmployees()
+        Integer count = employeeRepository.countByDepartmentId(departmentId);
+        return count != null ? count : 0;
     }
 
     @Override
@@ -176,9 +175,10 @@ public class DepartmentServiceImplementation implements DepartmentService {
         Department department = departmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Department not found with id: " + id));
 
-        // Check if department has employees
-        if (!department.getEmployees().isEmpty()) {
-            throw new RuntimeException("Cannot delete department with existing employees");
+        // ✅ FIX: Use repository method instead of department.getEmployees().isEmpty()
+        Integer employeeCount = employeeRepository.countByDepartmentId(id);
+        if (employeeCount != null && employeeCount > 0) {
+            throw new RuntimeException("Cannot delete department with existing employees. Employee count: " + employeeCount);
         }
 
         departmentRepository.delete(department);
@@ -186,6 +186,13 @@ public class DepartmentServiceImplementation implements DepartmentService {
 
     private DepartmentDto convertToDto(Department department) {
         DepartmentDto dto = modelMapper.map(department, DepartmentDto.class);
+
+        // ✅ FIX: Use repository method consistently for employee count
+        Integer employeeCount = 0;
+        if (department.getId() != null) {
+            employeeCount = employeeRepository.countByDepartmentId(department.getId());
+        }
+        dto.setEmployeeCount(employeeCount != null ? employeeCount : 0);
 
         // Set department head info
         if (department.getDepartmentHead() != null) {
@@ -197,7 +204,7 @@ public class DepartmentServiceImplementation implements DepartmentService {
         }
 
         // Set calculated fields
-        dto.setEmployeeCount(department.getEmployees().size());
+        // ❌ REMOVED: dto.setEmployeeCount(department.getEmployees().size()); // This was causing the crash!
         dto.setIsActive(department.getStatus() == Department.DepartmentStatus.ACTIVE);
 
         // Convert enum to string

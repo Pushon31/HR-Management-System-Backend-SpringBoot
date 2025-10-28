@@ -11,6 +11,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -258,9 +259,43 @@ public class EmployeeServiceImplementation implements EmployeeService {
                 .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
         employeeRepository.delete(employee);
     }
-    @Override
-    public Map<Employee.EmployeeWorkType, Long> getEmployeeWorkTypeStats() {
-        return employeeRepository.countEmployeesByWorkType();
+//    @Override
+//    public Map<Employee.EmployeeWorkType, Long> getEmployeeWorkTypeStats() {
+//        return employeeRepository.countEmployeesByWorkType();
+//    }
+@Override
+public Map<Employee.EmployeeWorkType, Long> getEmployeeWorkTypeStats() {
+    try {
+        // Simple safe implementation
+        Map<Employee.EmployeeWorkType, Long> stats = employeeRepository.countEmployeesByWorkType();
+
+        // Filter out any null keys
+        Map<Employee.EmployeeWorkType, Long> cleanStats = new HashMap<>();
+        for (Map.Entry<Employee.EmployeeWorkType, Long> entry : stats.entrySet()) {
+            if (entry.getKey() != null) {
+                cleanStats.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return cleanStats;
+
+    } catch (Exception e) {
+        System.out.println("Error in getEmployeeWorkTypeStats: " + e.getMessage());
+        // Return safe default
+        Map<Employee.EmployeeWorkType, Long> defaultStats = new HashMap<>();
+        defaultStats.put(Employee.EmployeeWorkType.ONSITE, 0L);
+        defaultStats.put(Employee.EmployeeWorkType.REMOTE, 0L);
+        defaultStats.put(Employee.EmployeeWorkType.HYBRID, 0L);
+        return defaultStats;
+    }
+}
+
+
+    private Map<Employee.EmployeeWorkType, Long> createDefaultWorkTypeStats() {
+        Map<Employee.EmployeeWorkType, Long> defaultStats = new HashMap<>();
+        defaultStats.put(Employee.EmployeeWorkType.ONSITE, 0L);
+        defaultStats.put(Employee.EmployeeWorkType.REMOTE, 0L);
+        defaultStats.put(Employee.EmployeeWorkType.HYBRID, 0L);
+        return defaultStats;
     }
 
     // ✅ Use ModelMapper only for basic field mapping in convertToDto

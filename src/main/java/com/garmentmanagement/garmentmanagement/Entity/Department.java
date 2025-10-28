@@ -50,6 +50,16 @@ public class Department extends BaseEntity {
 
     private LocalDate establishedDate;
 
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<Employee> employees = new HashSet<>();
+    // ❌ REMOVE THIS - It's causing ConcurrentModificationException
+    // @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // private Set<Employee> employees = new HashSet<>();
+
+    // ✅ Add helper method instead
+    public void addEmployee(Employee employee) {
+        employee.setDepartment(this);
+    }
+
+    public void removeEmployee(Employee employee) {
+        employee.setDepartment(null);
+    }
 }
