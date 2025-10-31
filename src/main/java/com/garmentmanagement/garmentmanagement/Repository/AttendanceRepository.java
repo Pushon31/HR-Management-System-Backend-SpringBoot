@@ -4,6 +4,7 @@ import com.garmentmanagement.garmentmanagement.Entity.Attendance;
 import com.garmentmanagement.garmentmanagement.Entity.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -28,6 +29,16 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     List<Attendance> findByAttendanceDateAndStatus(LocalDate date, Attendance.AttendanceStatus status);
 
     List<Attendance> findByAttendanceDateBetween(LocalDate attendanceDateAfter, LocalDate attendanceDateBefore);
+
+    @Query("SELECT COUNT(a) FROM Attendance a WHERE a.attendanceDate = :date AND a.status = :status")
+    Long countByDateAndStatus(@Param("date") LocalDate date, @Param("status") Attendance.AttendanceStatus status);
+
+    @Query("SELECT a FROM Attendance a WHERE a.attendanceDate BETWEEN :startDate AND :endDate")
+    List<Attendance> findAttendanceBetweenDates(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    // Department-wise attendance
+    @Query("SELECT a FROM Attendance a WHERE a.employee.department.id = :departmentId AND a.attendanceDate = :date")
+    List<Attendance> findByDepartmentAndDate(@Param("departmentId") Long departmentId, @Param("date") LocalDate date);
 
     // ❌ REMOVE THIS - causing the error
     // Optional<Attendance> findByEmployeeId(String employeeId);

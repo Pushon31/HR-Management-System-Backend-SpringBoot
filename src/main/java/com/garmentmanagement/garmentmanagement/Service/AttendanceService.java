@@ -6,6 +6,7 @@ import com.garmentmanagement.garmentmanagement.Entity.Attendance;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 
 public interface AttendanceService {
 
@@ -32,4 +33,7 @@ public interface AttendanceService {
     Integer getTodayPresentCount();
     Integer getTodayAbsentCount();
     Integer getTodayLateCount();
+
+    Map<String, Object> calculateAttendanceSummary(String employeeId, int year, int month);
+
 }

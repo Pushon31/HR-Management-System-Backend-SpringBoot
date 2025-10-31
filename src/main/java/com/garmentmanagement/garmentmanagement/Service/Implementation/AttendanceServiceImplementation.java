@@ -12,9 +12,14 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,48 +39,78 @@ public class AttendanceServiceImplementation implements AttendanceService {
 
     @Override
     public AttendanceDto checkIn(String employeeId) {
-        Employee employee = employeeRepository.findByEmployeeId(employeeId).orElseThrow(()->new RuntimeException("Employee not found"));
+        // 1. Find employee by business ID (employeeId)
+        Employee employee = employeeRepository.findByEmployeeId(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        LocalDate today=LocalDate.now();
-        LocalTime now=LocalTime.now();
-
-        if (attendanceRepository.existsByEmployeeIdAndAttendanceDate(employee.getId(),today)){
-            throw new RuntimeException("Attendance already exists");
+        // 2. Check if already checked in today
+        LocalDate today = LocalDate.now();
+        if (attendanceRepository.existsByEmployeeIdAndAttendanceDate(employee.getId(), today)) {
+            throw new RuntimeException("Already checked in for today");
         }
 
+        // 3. Create new attendance
         Attendance attendance = new Attendance();
         attendance.setEmployee(employee);
         attendance.setAttendanceDate(today);
-        attendance.setCheckinTime(now);
-        attendance.setCheckoutTime(now);
-        attendance.setStatus(calculateStatus(now));
-        attendance.setRemarks("Auto check-in");
-        Attendance saved = attendanceRepository.save(attendance);
-        return convertToDto(saved);
+        attendance.setCheckinTime(LocalTime.now());
 
+        // 4. Calculate status based on check-in time
+        LocalTime currentTime = LocalTime.now();
+        LocalTime lateThreshold = LocalTime.of(9, 15); // 9:15 AM
+        LocalTime absentThreshold = LocalTime.of(10, 0); // 10:00 AM
+
+        if (currentTime.isBefore(lateThreshold)) {
+            attendance.setStatus(Attendance.AttendanceStatus.PRESENT);
+        } else if (currentTime.isBefore(absentThreshold)) {
+            attendance.setStatus(Attendance.AttendanceStatus.LATE);
+        } else {
+            attendance.setStatus(Attendance.AttendanceStatus.ABSENT);
+        }
+
+        // 5. Set initial values
+        attendance.setRemarks("Auto check-in");
+        attendance.setTotalHours(0.0);
+
+        Attendance savedAttendance = attendanceRepository.save(attendance);
+        return convertToDto(savedAttendance);
     }
 
     @Override
     public AttendanceDto checkOut(String employeeId) {
+        // 1. Find today's attendance
+        Employee employee = employeeRepository.findByEmployeeId(employeeId)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        Employee employee = employeeRepository.findByEmployeeId(employeeId).orElseThrow(()->new RuntimeException("Employee not found"));
-        LocalDate today=LocalDate.now();
-        LocalTime now=LocalTime.now();
+        LocalDate today = LocalDate.now();
+        Attendance attendance = attendanceRepository.findByEmployeeIdAndAttendanceDate(employee.getId(), today)
+                .orElseThrow(() -> new RuntimeException("No check-in found for today"));
 
-        Attendance attendance = attendanceRepository.findByEmployeeIdAndAttendanceDate(employee.getId(),today)
-                .orElseThrow(()->new RuntimeException("Check-in not found for today."));
-
-
+        // 2. Check if already checked out
         if (attendance.getCheckoutTime() != null) {
-            throw new RuntimeException("Employee already checked-out today.");
+            throw new RuntimeException("Already checked out for today");
         }
 
-        attendance.setAttendanceDate(today);
-        attendance.setCheckoutTime(now);
-        attendance.setRemarks("Auto check-out");
-        Attendance updated = attendanceRepository.save(attendance);
-        return convertToDto(updated);
+        // 3. Set check-out time
+        attendance.setCheckoutTime(LocalTime.now());
 
+        // 4. Calculate total working hours
+        if (attendance.getCheckinTime() != null && attendance.getCheckoutTime() != null) {
+            Duration duration = Duration.between(attendance.getCheckinTime(), attendance.getCheckoutTime());
+            double hours = duration.toMinutes() / 60.0;
+            attendance.setTotalHours(hours);
+
+            // 5. Update status for half-day
+            if (hours < 4.0) {
+                attendance.setStatus(Attendance.AttendanceStatus.HALF_DAY);
+            }
+        }
+
+        // 6. Update remarks
+        attendance.setRemarks(attendance.getRemarks() + " | Auto check-out");
+
+        Attendance savedAttendance = attendanceRepository.save(attendance);
+        return convertToDto(savedAttendance);
     }
 
     @Override
@@ -84,13 +119,88 @@ public class AttendanceServiceImplementation implements AttendanceService {
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
         LocalDate today = LocalDate.now();
+        Optional<Attendance> attendanceOpt = attendanceRepository.findByEmployeeIdAndAttendanceDate(employee.getId(), today);
 
-        // ✅ Return null if no attendance found
-        Attendance attendance = attendanceRepository.findByEmployeeIdAndAttendanceDate(
-                employee.getId(), today
-        ).orElse(null);
+        if (attendanceOpt.isPresent()) {
+            return convertToDto(attendanceOpt.get());
+        } else {
+            // Auto-create ABSENT record if no check-in by 10 AM
+            LocalTime currentTime = LocalTime.now();
+            if (currentTime.isAfter(LocalTime.of(10, 0))) { // After 10 AM
+                Attendance absentAttendance = new Attendance();
+                absentAttendance.setEmployee(employee);
+                absentAttendance.setAttendanceDate(today);
+                absentAttendance.setStatus(Attendance.AttendanceStatus.ABSENT);
+                absentAttendance.setRemarks("Auto-marked absent");
+                absentAttendance.setTotalHours(0.0);
 
-        return attendance != null ? convertToDto(attendance) : null;
+                Attendance saved = attendanceRepository.save(absentAttendance);
+                return convertToDto(saved);
+            }
+
+            return null; // No attendance record yet
+        }
+    }
+
+    @Override
+    public Map<String, Object> calculateAttendanceSummary(String employeeId, int year, int month) {
+        // Get monthly attendance for the employee
+        List<AttendanceDto> monthlyAttendance = getMonthlyAttendance(employeeId, year, month);
+
+        // Calculate counts for each status
+        long totalPresent = monthlyAttendance.stream()
+                .filter(a -> a.getStatus().equals("PRESENT") || a.getStatus().equals("PRESENT"))
+                .count();
+
+        long totalLate = monthlyAttendance.stream()
+                .filter(a -> a.getStatus().equals("LATE") || a.getStatus().equals("LATE"))
+                .count();
+
+        long totalAbsent = monthlyAttendance.stream()
+                .filter(a -> a.getStatus().equals("ABSENT") || a.getStatus().equals("ABSENT"))
+                .count();
+
+        long totalHalfDay = monthlyAttendance.stream()
+                .filter(a -> a.getStatus().equals("HALF_DAY") || a.getStatus().equals("HALF_DAY"))
+                .count();
+
+        // Calculate total working days in the month
+        int totalWorkingDays = getWorkingDaysInMonth(year, month);
+
+        // Calculate attendance percentage
+        double attendancePercentage = 0.0;
+        if (totalWorkingDays > 0) {
+            attendancePercentage = (double) (totalPresent + totalLate) / totalWorkingDays * 100;
+        }
+
+        // Create summary map
+        Map<String, Object> summary = new HashMap<>();
+        summary.put("employeeId", employeeId);
+        summary.put("year", year);
+        summary.put("month", month);
+        summary.put("totalPresent", totalPresent);
+        summary.put("totalLate", totalLate);
+        summary.put("totalAbsent", totalAbsent);
+        summary.put("totalHalfDay", totalHalfDay);
+        summary.put("totalWorkingDays", totalWorkingDays);
+        summary.put("attendancePercentage", Math.round(attendancePercentage * 100.0) / 100.0);
+
+        return summary;
+    }
+
+    // ✅ PRIVATE HELPER METHOD - Only in ServiceImpl
+    private int getWorkingDaysInMonth(int year, int month) {
+        // Simple implementation - exclude weekends
+        LocalDate start = LocalDate.of(year, month, 1);
+        LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
+
+        int workingDays = 0;
+        for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
+            if (date.getDayOfWeek() != DayOfWeek.SATURDAY && date.getDayOfWeek() != DayOfWeek.SUNDAY) {
+                workingDays++;
+            }
+        }
+        return workingDays;
     }
 
 
@@ -214,23 +324,29 @@ public class AttendanceServiceImplementation implements AttendanceService {
 
     @Override
     public Integer getTodayPresentCount() {
-        return attendanceRepository.findByAttendanceDateAndStatus(
-                LocalDate.now(), Attendance.AttendanceStatus.PRESENT
-        ).size();
-    }
-
-    @Override
-    public Integer getTodayAbsentCount() {
-        // This would need total employees count - present count
-        // For now returning 0 as placeholder
-        return 0;
+        List<Attendance> todayPresent = attendanceRepository.findByAttendanceDateAndStatus(
+                LocalDate.now(),
+                Attendance.AttendanceStatus.PRESENT
+        );
+        return todayPresent.size();
     }
 
     @Override
     public Integer getTodayLateCount() {
-        return attendanceRepository.findByAttendanceDateAndStatus(
-                LocalDate.now(), Attendance.AttendanceStatus.LATE
-        ).size();
+        List<Attendance> todayLate = attendanceRepository.findByAttendanceDateAndStatus(
+                LocalDate.now(),
+                Attendance.AttendanceStatus.LATE
+        );
+        return todayLate.size();
+    }
+
+    @Override
+    public Integer getTodayAbsentCount() {
+        List<Attendance> todayAbsent = attendanceRepository.findByAttendanceDateAndStatus(
+                LocalDate.now(),
+                Attendance.AttendanceStatus.ABSENT
+        );
+        return todayAbsent.size();
     }
 
     // ==================== HELPER METHODS ====================
@@ -287,4 +403,6 @@ public class AttendanceServiceImplementation implements AttendanceService {
 
         return dto;
     }
+
+
 }

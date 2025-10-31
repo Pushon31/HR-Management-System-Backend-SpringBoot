@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/attendance")
@@ -134,4 +135,16 @@ public class AttendanceController {
         Integer count = attendanceService.getTodayLateCount();
         return ResponseEntity.ok(count);
     }
+
+
+    @GetMapping("/summary/{employeeId}")
+    public ResponseEntity<Map<String, Object>> getAttendanceSummary(
+            @PathVariable String employeeId,
+            @RequestParam int year,
+            @RequestParam int month) {
+
+        Map<String, Object> summary = attendanceService.calculateAttendanceSummary(employeeId, year, month);
+        return ResponseEntity.ok(summary);
+    }
+
 }
