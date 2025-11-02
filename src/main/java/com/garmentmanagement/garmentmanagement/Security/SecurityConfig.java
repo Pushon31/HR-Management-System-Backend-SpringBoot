@@ -77,7 +77,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/employee/**").hasAnyRole("EMPLOYEE", "MANAGER", "HR", "ACCOUNTANT", "ADMIN")
 
                         // Specific module access
-                        .requestMatchers("/api/payroll/**").hasAnyRole("ACCOUNTANT", "ADMIN", "MANAGER")
+                        .requestMatchers("/api/payroll/**").hasAnyRole("ACCOUNTANT", "ADMIN", "MANAGER","EMPLOYEE")
                         .requestMatchers("/api/recruitment/**").hasAnyRole("HR", "ADMIN", "MANAGER")
                         .requestMatchers("/api/leaves/**").hasAnyRole("HR", "ADMIN", "MANAGER", "EMPLOYEE")
                         .requestMatchers("/api/tasks/**").hasAnyRole("MANAGER", "ADMIN", "EMPLOYEE")

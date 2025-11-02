@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,5 +33,7 @@ public interface PayslipRepository extends JpaRepository<Payslip, Long> {
 
     // ✅ Find all payslips for a specific pay period
     @Query("SELECT p FROM Payslip p WHERE p.payroll.payPeriod = :payPeriod")
-    List<Payslip> findByPayPeriod(@Param("payPeriod") String payPeriod);
+    List<Payslip> findByPayPeriod(@Param("payPeriod") YearMonth payPeriod);
+
+
 }

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -239,10 +240,24 @@ public class PayrollServiceImplementation implements PayrollService {
 
     // ✅ NEW: Get payslips by pay period
     public List<PayslipDto> getPayslipsByPayPeriod(String payPeriod) {
-        return payslipRepo.findByPayPeriod(payPeriod)
-                .stream()
-                .map(this::convertToPayslipDto)
-                .collect(Collectors.toList());
+        try {
+            System.out.println("🔍 Processing payslips for period: " + payPeriod);
+
+            // Convert String to YearMonth
+            YearMonth period = YearMonth.parse(payPeriod);
+            System.out.println("✅ Parsed to YearMonth: " + period);
+
+            List<Payslip> payslips = payslipRepo.findByPayPeriod(period);
+            System.out.println("✅ Found " + payslips.size() + " payslips");
+
+            return payslips.stream()
+                    .map(this::convertToPayslipDto)
+                    .collect(Collectors.toList());
+
+        } catch (DateTimeParseException e) {
+            System.err.println("❌ Error parsing pay period: " + payPeriod);
+            throw new IllegalArgumentException("Invalid pay period format. Expected: yyyy-MM", e);
+        }
     }
     // ==================== BONUS METHODS ====================
 
