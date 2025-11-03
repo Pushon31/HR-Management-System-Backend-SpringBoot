@@ -90,54 +90,84 @@ public class PayrollServiceImplementation implements PayrollService {
 
     @Override
     public PayrollDto processPayroll(Long employeeId, YearMonth payPeriod) {
-        // Check if payroll already processed
-        if (payrollRepo.existsByEmployeeIdAndPayPeriod(employeeId, payPeriod)) {
-            throw new RuntimeException("Payroll already processed for this period");
+        try {
+            System.out.println("🔍 Processing payroll for employee: " + employeeId + ", period: " + payPeriod);
+
+            // Check if payroll already processed
+            if (payrollRepo.existsByEmployeeIdAndPayPeriod(employeeId, payPeriod)) {
+                System.out.println("❌ Payroll already exists for employee " + employeeId + " in period " + payPeriod);
+                throw new RuntimeException("PAYROLL_ALREADY_EXISTS: Payroll already processed for employee " + employeeId + " in period " + payPeriod);
+            }
+
+            Employee employee = employeeRepo.findById(employeeId)
+                    .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + employeeId));
+
+            SalaryStructure salaryStructure = salaryStructureRepo.findByEmployeeId(employeeId)
+                    .orElseThrow(() -> new RuntimeException("Salary structure not found for employee: " + employeeId));
+
+            // Get attendance data for the period
+            int year = payPeriod.getYear();
+            int month = payPeriod.getMonthValue();
+            List<Attendance> attendanceList = attendanceRepo.findByEmployeeIdAndMonth(employeeId, year, month);
+
+            long presentDays = attendanceList.stream()
+                    .filter(att -> att.getStatus() == Attendance.AttendanceStatus.PRESENT ||
+                            att.getStatus() == Attendance.AttendanceStatus.LATE)
+                    .count();
+
+            long workingDays = LocalDate.of(year, month, 1).lengthOfMonth();
+
+            // Calculate payroll
+            Payroll payroll = new Payroll();
+            payroll.setEmployee(employee);
+            payroll.setPayPeriod(payPeriod);
+            payroll.setPayDate(LocalDate.now());
+            payroll.setBasicSalary(salaryStructure.getBasicSalary());
+            payroll.setTotalAllowances(salaryStructure.getHouseRent()
+                    .add(salaryStructure.getMedicalAllowance())
+                    .add(salaryStructure.getTransportAllowance())
+                    .add(salaryStructure.getOtherAllowances()));
+            payroll.setWorkingDays((int) workingDays);
+            payroll.setPresentDays((int) presentDays);
+
+            // Calculate deductions for absent days
+            double dailySalary = salaryStructure.getBasicSalary().doubleValue() / workingDays;
+            long absentDays = workingDays - presentDays;
+            payroll.setOtherDeductions(BigDecimal.valueOf(absentDays * dailySalary));
+
+            payroll.calculatePayroll();
+            payroll.setStatus(Payroll.PayrollStatus.PROCESSED);
+
+            Payroll saved = payrollRepo.save(payroll);
+            System.out.println("✅ Payroll processed successfully: " + saved.getId());
+
+            // ✅ AUTO-GENERATE PAYSLIP AFTER PAYROLL PROCESSING
+            try {
+                System.out.println("🔄 Auto-generating payslip for payroll ID: " + saved.getId());
+                PayslipDto payslip = generatePayslip(saved.getId());
+                System.out.println("✅ Payslip auto-generated successfully: " + payslip.getPayslipCode());
+            } catch (Exception payslipException) {
+                System.err.println("⚠️ Payroll processed but payslip generation failed: " + payslipException.getMessage());
+                // Don't throw - payroll is still processed successfully
+                // Log the error but don't stop the payroll process
+            }
+
+            return convertToPayrollDto(saved);
+
+        } catch (RuntimeException e) {
+            // Re-throw business exceptions (like duplicate payroll)
+            if (e.getMessage().contains("PAYROLL_ALREADY_EXISTS")) {
+                System.err.println("🔴 Business exception: " + e.getMessage());
+                throw e;
+            }
+            System.err.println("❌ Error processing payroll: " + e.getMessage());
+            throw new RuntimeException("Failed to process payroll: " + e.getMessage(), e);
+        } catch (Exception e) {
+            System.err.println("❌ Unexpected error processing payroll: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Unexpected error processing payroll: " + e.getMessage(), e);
         }
-
-        Employee employee = employeeRepo.findById(employeeId)
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
-
-        SalaryStructure salaryStructure = salaryStructureRepo.findByEmployeeId(employeeId)
-                .orElseThrow(() -> new RuntimeException("Salary structure not found"));
-
-        // Get attendance data for the period
-        int year = payPeriod.getYear();
-        int month = payPeriod.getMonthValue();
-        List<Attendance> attendanceList = attendanceRepo.findByEmployeeIdAndMonth(employeeId, year, month);
-
-        long presentDays = attendanceList.stream()
-                .filter(att -> att.getStatus() == Attendance.AttendanceStatus.PRESENT ||
-                        att.getStatus() == Attendance.AttendanceStatus.LATE)
-                .count();
-
-        long workingDays = LocalDate.of(year, month, 1).lengthOfMonth(); // Simple calculation
-
-        // Calculate payroll
-        Payroll payroll = new Payroll();
-        payroll.setEmployee(employee);
-        payroll.setPayPeriod(payPeriod);
-        payroll.setPayDate(LocalDate.now());
-        payroll.setBasicSalary(salaryStructure.getBasicSalary());
-        payroll.setTotalAllowances(salaryStructure.getHouseRent()
-                .add(salaryStructure.getMedicalAllowance())
-                .add(salaryStructure.getTransportAllowance())
-                .add(salaryStructure.getOtherAllowances()));
-        payroll.setWorkingDays((int) workingDays);
-        payroll.setPresentDays((int) presentDays);
-
-        // Calculate deductions for absent days
-        double dailySalary = salaryStructure.getBasicSalary().doubleValue() / workingDays;
-        long absentDays = workingDays - presentDays;
-        payroll.setOtherDeductions(BigDecimal.valueOf(absentDays * dailySalary));
-
-        payroll.calculatePayroll();
-        payroll.setStatus(Payroll.PayrollStatus.PROCESSED);
-
-        Payroll saved = payrollRepo.save(payroll);
-        return convertToPayrollDto(saved);
     }
-
     @Override
     public List<PayrollDto> processBulkPayroll(YearMonth payPeriod, List<Long> employeeIds) {
         return employeeIds.stream()
