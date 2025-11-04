@@ -21,10 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -90,14 +87,15 @@ public class AuthController {
         Set<String> strRoles = signUpRequest.getRoles();
         Set<Role> roles = new HashSet<>();
 
+        boolean shouldCreateEmployee = false;
+        String designation = "Employee";
+
         if (strRoles == null || strRoles.isEmpty()) {
             // Default role: EMPLOYEE
             Role employeeRole = roleRepository.findByName(Role.ROLE_EMPLOYEE)
                     .orElseThrow(() -> new RuntimeException("Error: Employee role not found."));
             roles.add(employeeRole);
-
-            // Auto-create employee record
-            createEmployeeRecord(signUpRequest, user);
+            shouldCreateEmployee = true;
         } else {
             strRoles.forEach(role -> {
                 switch (role) {
@@ -127,45 +125,78 @@ public class AuthController {
                         roles.add(employeeRole);
                 }
             });
+
+            // ✅ Check if any role requires employee record (exclude admin)
+            List<String> employeeRoles = Arrays.asList("manager", "hr", "accountant", "employee");
+            shouldCreateEmployee = strRoles.stream().anyMatch(employeeRoles::contains);
+
+            // Set designation based on highest role
+            if (strRoles.contains("manager")) designation = "Manager";
+            else if (strRoles.contains("hr")) designation = "HR Manager";
+            else if (strRoles.contains("accountant")) designation = "Accountant";
         }
+
         user.setRoles(roles);
         User savedUser = userRepository.save(user);
 
-        // ✅ FIX: Return JSON for success response too
-        return ResponseEntity.ok(Map.of(
-                "message", "User registered successfully!",
-                "userId", savedUser.getId(),
-                "username", savedUser.getUsername()
-        ));
+        // ✅ Auto-create employee record for employee roles (not for admin)
+        Employee employee = null;
+        if (shouldCreateEmployee) {
+            employee = createEmployeeRecord(savedUser,designation);
+        }
+
+        // ✅ Return enhanced response
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "User registered successfully!");
+        response.put("userId", savedUser.getId());
+        response.put("username", savedUser.getUsername());
+        response.put("employeeCreated", shouldCreateEmployee);
+
+        if (shouldCreateEmployee && employee != null) {
+            response.put("employeeId", employee.getId());
+            response.put("employeeCode", employee.getEmployeeId());
+            response.put("designation", employee.getDesignation());
+        }
+
+        return ResponseEntity.ok(response);
     }
 
-    // ✅ NEW METHOD: Auto-create employee record
-    private void createEmployeeRecord(SignupRequest signUpRequest, User user) {
+    // ✅ Enhanced employee creation method
+    private Employee createEmployeeRecord(User user, String designation) {
         try {
             // Generate unique employee ID
             String employeeId = "EMP" + System.currentTimeMillis();
 
             // Create employee entity
             Employee employee = new Employee();
-            employee.setFirstName(signUpRequest.getFullName().split(" ")[0]); // First word as first name
-            employee.setLastName(signUpRequest.getFullName().contains(" ") ?
-                    signUpRequest.getFullName().substring(signUpRequest.getFullName().indexOf(" ") + 1) :
-                    ""); // Rest as last name
+            employee.setFirstName(user.getFullName().split(" ")[0]);
+            employee.setLastName(user.getFullName().contains(" ") ?
+                    user.getFullName().substring(user.getFullName().indexOf(" ") + 1) : "");
             employee.setEmployeeId(employeeId);
-            employee.setEmail(signUpRequest.getEmail());
+            employee.setEmail(user.getEmail());
+            employee.setDesignation(designation);
             employee.setStatus(Employee.EmployeeStatus.ACTIVE);
             employee.setWorkType(Employee.EmployeeWorkType.ONSITE);
             employee.setEmployeeType(Employee.EmployeeType.FULL_TIME);
             employee.setJoinDate(LocalDate.now());
 
-            // Save employee
-            employeeRepository.save(employee);
+            // ✅ Set user reference
+            employee.setUser(user);
 
-            System.out.println("✅ Auto-created employee record for: " + signUpRequest.getEmail());
+            Employee savedEmployee = employeeRepository.save(employee);
+
+            // ✅ Update user with employee reference (bidirectional relationship)
+            user.setEmployee(savedEmployee);
+            userRepository.save(user);
+
+            System.out.println("✅ Auto-created employee record for: " + user.getEmail() + " with designation: " + designation);
+            return savedEmployee;
         } catch (Exception e) {
             System.err.println("❌ Failed to auto-create employee record: " + e.getMessage());
+            return null;
         }
     }
+
 
 
     @GetMapping("/me")

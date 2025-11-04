@@ -118,4 +118,35 @@ public class Employee extends BaseEntity {
 
     @Column(name = "profile_pic")
     private String profilePic;
+
+    // ✅ ADD: One-to-One relationship with User
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    // ✅ ADD: Constructor with User
+    public Employee(User user) {
+        this.user = user;
+        this.email = user.getEmail();
+        this.firstName = extractFirstName(user.getFullName());
+        this.lastName = extractLastName(user.getFullName());
+        this.employeeId = generateEmployeeId();
+        this.status = EmployeeStatus.ACTIVE;
+        this.workType = EmployeeWorkType.ONSITE;
+        this.employeeType = EmployeeType.FULL_TIME;
+        this.joinDate = LocalDate.now();
+    }
+
+    private String extractFirstName(String fullName) {
+        return fullName.split(" ")[0];
+    }
+
+    private String extractLastName(String fullName) {
+        String[] names = fullName.split(" ");
+        return names.length > 1 ? names[names.length - 1] : "";
+    }
+
+    private String generateEmployeeId() {
+        return "EMP" + System.currentTimeMillis();
+    }
 }

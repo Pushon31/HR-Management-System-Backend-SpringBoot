@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,6 +63,70 @@ public class UserController {
         userRepository.save(user);
 
         return ResponseEntity.ok("User roles updated successfully");
+    }
+
+    @PutMapping("/{userId}")
+    public ResponseEntity<?> updateUser(@PathVariable Long userId, @RequestBody CreateUserRequest updateRequest) {
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+            // Update username - exclude current user from check
+            if (updateRequest.getUsername() != null && !updateRequest.getUsername().equals(user.getUsername())) {
+                boolean usernameExists = userRepository.existsByUsernameAndIdNot(updateRequest.getUsername(), userId);
+                if (usernameExists) {
+                    return ResponseEntity.badRequest().body(
+                            Map.of("message", "Error: Username is already taken by another user!")
+                    );
+                }
+                user.setUsername(updateRequest.getUsername());
+            }
+
+            // Update email - exclude current user from check
+            if (updateRequest.getEmail() != null && !updateRequest.getEmail().equals(user.getEmail())) {
+                boolean emailExists = userRepository.existsByEmailAndIdNot(updateRequest.getEmail(), userId);
+                if (emailExists) {
+                    return ResponseEntity.badRequest().body(
+                            Map.of("message", "Error: Email is already in use by another user!")
+                    );
+                }
+                user.setEmail(updateRequest.getEmail());
+            }
+
+            // Update full name
+            if (updateRequest.getFullName() != null) {
+                user.setFullName(updateRequest.getFullName());
+            }
+
+            // Update password if provided and not empty
+            if (updateRequest.getPassword() != null && !updateRequest.getPassword().trim().isEmpty()) {
+                user.setPassword(passwordEncoder.encode(updateRequest.getPassword()));
+            }
+
+            // Update roles if provided
+            if (updateRequest.getRoles() != null && !updateRequest.getRoles().isEmpty()) {
+                Set<Role> roles = new HashSet<>();
+                for (String roleName : updateRequest.getRoles()) {
+                    Role role = roleRepository.findByName(roleName)
+                            .orElseThrow(() -> new RuntimeException("Role not found: " + roleName));
+                    roles.add(role);
+                }
+                user.setRoles(roles);
+            }
+
+            User updatedUser = userRepository.save(user);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "User updated successfully!",
+                    "userId", updatedUser.getId(),
+                    "username", updatedUser.getUsername()
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("message", "Error updating user: " + e.getMessage())
+            );
+        }
     }
 
     // ✅ Assign role to user
@@ -160,6 +225,116 @@ public class UserController {
             return ResponseEntity.badRequest().body(
                     Map.of("message", "Error creating user: " + e.getMessage())
             );
+        }
+    }
+
+    // UserController.java - createEmployeeForUser method update করুন
+    @PostMapping("/{userId}/create-employee")
+    public ResponseEntity<?> createEmployeeForUser(@PathVariable Long userId, @RequestBody(required = false) Map<String, String> employeeData) {
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+            // Check if user already has employee
+            if (user.getEmployee() != null) {
+                return ResponseEntity.badRequest().body(
+                        Map.of("message", "User already has an employee record")
+                );
+            }
+
+            // Check if user has roles that require employee
+            List<String> employeeRoles = Arrays.asList(Role.ROLE_EMPLOYEE, Role.ROLE_MANAGER, Role.ROLE_HR, Role.ROLE_ACCOUNTANT);
+            boolean hasEmployeeRole = user.getRoles().stream()
+                    .anyMatch(role -> employeeRoles.contains(role.getName()));
+
+            if (!hasEmployeeRole) {
+                return ResponseEntity.badRequest().body(
+                        Map.of("message", "User roles don't require employee record. Add employee role first.")
+                );
+            }
+
+            // Generate unique employee ID
+            String employeeId = "EMP" + System.currentTimeMillis();
+
+            // Create employee
+            Employee employee = new Employee();
+            employee.setFirstName(user.getFullName().split(" ")[0]);
+            employee.setLastName(user.getFullName().contains(" ") ?
+                    user.getFullName().substring(user.getFullName().indexOf(" ") + 1) : "");
+            employee.setEmployeeId(employeeId);
+            employee.setEmail(user.getEmail());
+
+            // Flexible status, work type, employee type
+            if (employeeData != null && employeeData.containsKey("status")) {
+                employee.setStatus(Employee.EmployeeStatus.valueOf(employeeData.get("status")));
+            } else {
+                employee.setStatus(Employee.EmployeeStatus.ACTIVE);
+            }
+
+            if (employeeData != null && employeeData.containsKey("workType")) {
+                employee.setWorkType(Employee.EmployeeWorkType.valueOf(employeeData.get("workType")));
+            } else {
+                employee.setWorkType(Employee.EmployeeWorkType.ONSITE);
+            }
+
+            if (employeeData != null && employeeData.containsKey("employeeType")) {
+                employee.setEmployeeType(Employee.EmployeeType.valueOf(employeeData.get("employeeType")));
+            } else {
+                employee.setEmployeeType(Employee.EmployeeType.FULL_TIME);
+            }
+
+            employee.setJoinDate(LocalDate.now());
+
+            // Set designation based on role or from request
+            if (employeeData != null && employeeData.containsKey("designation")) {
+                employee.setDesignation(employeeData.get("designation"));
+            } else {
+                if (user.getRoles().stream().anyMatch(role -> role.getName().equals(Role.ROLE_MANAGER))) {
+                    employee.setDesignation("Manager");
+                } else if (user.getRoles().stream().anyMatch(role -> role.getName().equals(Role.ROLE_HR))) {
+                    employee.setDesignation("HR Manager");
+                } else if (user.getRoles().stream().anyMatch(role -> role.getName().equals(Role.ROLE_ACCOUNTANT))) {
+                    employee.setDesignation("Accountant");
+                } else {
+                    employee.setDesignation("Employee");
+                }
+            }
+
+            Employee savedEmployee = employeeRepository.save(employee);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Employee record created successfully",
+                    "employeeId", savedEmployee.getId(),
+                    "employeeCode", savedEmployee.getEmployeeId(),
+                    "designation", savedEmployee.getDesignation(),
+                    "status", savedEmployee.getStatus().name(),
+                    "workType", savedEmployee.getWorkType().name(),
+                    "employeeType", savedEmployee.getEmployeeType().name()
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                    Map.of("message", "Error creating employee: " + e.getMessage())
+            );
+        }
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long userId) {
+        try {
+            System.out.println("🔍 UserController: Getting user by ID: " + userId);
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+
+            UserResponse response = convertToUserResponse(user);
+
+            System.out.println("✅ UserController: Returning user: " + response.getUsername());
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            System.err.println("❌ UserController: Error getting user by ID: " + e.getMessage());
+            return ResponseEntity.badRequest().body(null);
         }
     }
 

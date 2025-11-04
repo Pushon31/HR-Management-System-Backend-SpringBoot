@@ -77,6 +77,20 @@ public class User extends BaseEntity implements UserDetails {
         return isActive;
     }
 
+    // ✅ ADD: One-to-One relationship with Employee
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Employee employee;
+
+    // ✅ ADD: Helper method to get employee ID
+    public String getEmployeeCode() {
+        return employee != null ? employee.getEmployeeId() : null;
+    }
+
+    // ✅ ADD: Check if user has employee record
+    public boolean hasEmployeeRecord() {
+        return employee != null;
+    }
+
     // Simple constructor for creating users
     public User(String username, String password, String email, String fullName) {
         this.username = username;
