@@ -252,12 +252,12 @@ public class LeaveServiceImplementation implements LeaveService {
 
     @Override
     public List<LeaveApplicationDto> getPendingLeaveApplications() {
-        return leaveApplicationRepository.findByStatus(LeaveApplication.LeaveStatus.PENDING)
+
+        return leaveApplicationRepository.findPendingLeaves()
                 .stream()
                 .map(this::convertToLeaveApplicationDto)
                 .collect(Collectors.toList());
     }
-
     @Override
     public List<LeaveApplicationDto> getPendingLeavesForManager(Long managerId) {
         return leaveApplicationRepository.findPendingLeavesForManager(managerId)
@@ -293,7 +293,6 @@ public class LeaveServiceImplementation implements LeaveService {
     // ==================== HELPER METHODS ====================
 
     private int calculateWorkingDays(LocalDate startDate, LocalDate endDate) {
-        // Simple implementation - can be enhanced to exclude weekends and holidays
         return (int) java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate) + 1;
     }
 
@@ -308,28 +307,32 @@ public class LeaveServiceImplementation implements LeaveService {
     private LeaveApplicationDto convertToLeaveApplicationDto(LeaveApplication leaveApplication) {
         LeaveApplicationDto dto = modelMapper.map(leaveApplication, LeaveApplicationDto.class);
 
-        // Manual mapping for relationships
+        // Employee data
         if (leaveApplication.getEmployee() != null) {
             dto.setEmployeeId(leaveApplication.getEmployee().getId());
             dto.setEmployeeName(leaveApplication.getEmployee().getFirstName() + " " + leaveApplication.getEmployee().getLastName());
             dto.setEmployeeCode(leaveApplication.getEmployee().getEmployeeId());
 
+            // Department data
             if (leaveApplication.getEmployee().getDepartment() != null) {
                 dto.setDepartmentName(leaveApplication.getEmployee().getDepartment().getName());
             }
         }
 
+        // Leave type data
         if (leaveApplication.getLeaveType() != null) {
             dto.setLeaveTypeId(leaveApplication.getLeaveType().getId());
             dto.setLeaveTypeName(leaveApplication.getLeaveType().getName());
             dto.setLeaveTypeCode(leaveApplication.getLeaveType().getCode());
         }
 
+        // Approver data
         if (leaveApplication.getApprovedBy() != null) {
             dto.setApprovedById(leaveApplication.getApprovedBy().getId());
             dto.setApprovedByName(leaveApplication.getApprovedBy().getFirstName() + " " + leaveApplication.getApprovedBy().getLastName());
         }
 
+        // Status
         if (leaveApplication.getStatus() != null) {
             dto.setStatus(leaveApplication.getStatus().name());
         }

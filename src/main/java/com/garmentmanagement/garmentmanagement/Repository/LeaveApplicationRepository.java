@@ -3,6 +3,7 @@ package com.garmentmanagement.garmentmanagement.Repository;
 import com.garmentmanagement.garmentmanagement.Entity.LeaveApplication;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -22,12 +23,12 @@ public interface LeaveApplicationRepository extends JpaRepository<LeaveApplicati
     // Status based queries
     List<LeaveApplication> findByStatus(LeaveApplication.LeaveStatus status);
 
-    // Manager/Approver queries
-    @Query("SELECT la FROM LeaveApplication la WHERE la.employee.manager.id = :managerId AND la.status = 'PENDING'")
-    List<LeaveApplication> findPendingLeavesForManager(Long managerId);
-
-    @Query("SELECT la FROM LeaveApplication la WHERE la.employee.department.id = :departmentId")
-    List<LeaveApplication> findByDepartmentId(Long departmentId);
+//    // Manager/Approver queries
+//    @Query("SELECT la FROM LeaveApplication la WHERE la.employee.manager.id = :managerId AND la.status = 'PENDING'")
+//    List<LeaveApplication> findPendingLeavesForManager(Long managerId);
+//
+//    @Query("SELECT la FROM LeaveApplication la WHERE la.employee.department.id = :departmentId")
+//    List<LeaveApplication> findByDepartmentId(Long departmentId);
 
     // Check for overlapping leaves
     @Query("SELECT la FROM LeaveApplication la WHERE la.employee.id = :employeeId AND " +
@@ -60,4 +61,21 @@ public interface LeaveApplicationRepository extends JpaRepository<LeaveApplicati
     // Upcoming leaves
     @Query("SELECT la FROM LeaveApplication la WHERE la.startDate BETWEEN :startDate AND :endDate AND la.status = 'APPROVED'")
     List<LeaveApplication> findUpcomingLeaves(LocalDate startDate, LocalDate endDate);
+
+
+    // Fix: Get pending leaves for manager (check if manager relationship exists)
+    @Query("SELECT la FROM LeaveApplication la WHERE la.employee.manager.id = :managerId AND la.status = 'PENDING'")
+    List<LeaveApplication> findPendingLeavesForManager(@Param("managerId") Long managerId);
+
+    // Fix: Get leaves by department
+    @Query("SELECT la FROM LeaveApplication la WHERE la.employee.department.id = :departmentId")
+    List<LeaveApplication> findByDepartmentId(@Param("departmentId") Long departmentId);
+
+    // Fix: Get all pending leaves (for admin)
+    @Query("SELECT la FROM LeaveApplication la WHERE la.status = 'PENDING' ORDER BY la.appliedDate DESC")
+    List<LeaveApplication> findPendingLeaves();
+
+    // Fix: Add method to find by status with employee data
+    @Query("SELECT la FROM LeaveApplication la JOIN FETCH la.employee JOIN FETCH la.leaveType WHERE la.status = :status")
+    List<LeaveApplication> findByStatusWithDetails(@Param("status") LeaveApplication.LeaveStatus status);
 }
