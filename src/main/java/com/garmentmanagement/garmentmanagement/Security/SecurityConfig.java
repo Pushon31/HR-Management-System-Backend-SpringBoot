@@ -77,7 +77,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/employee/**").hasAnyRole("EMPLOYEE", "MANAGER", "HR", "ACCOUNTANT", "ADMIN")
 
                         // ✅ FIXED: Payroll endpoints - use hasAnyAuthority for precise control
-                        .requestMatchers("/api/payroll/**").hasAnyAuthority("ROLE_ACCOUNTANT", "ROLE_ADMIN", "ROLE_MANAGER", "ROLE_EMPLOYEE")
+                        .requestMatchers("/api/payroll/**").permitAll()
 
                         .requestMatchers("/api/recruitment/**").hasAnyRole("HR", "ADMIN", "MANAGER")
                         .requestMatchers("/api/leaves/**").hasAnyRole("HR", "ADMIN", "MANAGER", "EMPLOYEE")

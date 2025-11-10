@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+              http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="payslip_template"
+              pageWidth="595"
+              pageHeight="842"
+              columnWidth="555"
+              leftMargin="20"
+              rightMargin="20"
+              topMargin="20"
+              bottomMargin="20">
+
+    <!-- Parameters -->
+    <parameter name="COMPANY_NAME" class="java.lang.String"/>
+    <parameter name="COMPANY_ADDRESS" class="java.lang.String"/>
+    <parameter name="COMPANY_PHONE" class="java.lang.String"/>
+    <parameter name="COMPANY_EMAIL" class="java.lang.String"/>
+    <parameter name="EMPLOYEE_NAME" class="java.lang.String"/>
+    <parameter name="EMPLOYEE_ID" class="java.lang.String"/>
+    <parameter name="DESIGNATION" class="java.lang.String"/>
+    <parameter name="DEPARTMENT" class="java.lang.String"/>
+    <parameter name="PAY_PERIOD" class="java.lang.String"/>
+    <parameter name="BASIC_SALARY" class="java.math.BigDecimal"/>
+    <parameter name="HOUSE_RENT" class="java.math.BigDecimal"/>
+    <parameter name="MEDICAL_ALLOWANCE" class="java.math.BigDecimal"/>
+    <parameter name="TRANSPORT_ALLOWANCE" class="java.math.BigDecimal"/>
+    <parameter name="OTHER_ALLOWANCES" class="java.math.BigDecimal"/>
+    <parameter name="TOTAL_EARNINGS" class="java.math.BigDecimal"/>
+    <parameter name="TAX_DEDUCTION" class="java.math.BigDecimal"/>
+    <parameter name="OTHER_DEDUCTIONS" class="java.math.BigDecimal"/>
+    <parameter name="TOTAL_DEDUCTIONS" class="java.math.BigDecimal"/>
+    <parameter name="NET_SALARY" class="java.math.BigDecimal"/>
+    <parameter name="WORKING_DAYS" class="java.lang.Integer"/>
+    <parameter name="PRESENT_DAYS" class="java.lang.Integer"/>
+    <parameter name="ABSENT_DAYS" class="java.lang.Integer"/>
+
+    <title>
+        <band height="100">
+            <!-- Company Header -->
+            <staticText>
+                <reportElement x="0" y="0" width="555" height="30"/>
+                <text><![CDATA[COMPANY PAYSLIP]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="0" y="30" width="555" height="20"/>
+                <textFieldExpression><![CDATA[$P{COMPANY_NAME}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="50" width="555" height="20"/>
+                <textFieldExpression><![CDATA[$P{COMPANY_ADDRESS} + " | " + $P{COMPANY_PHONE} + " | " + $P{COMPANY_EMAIL}]]></textFieldExpression>
+            </textField>
+
+            <!-- Separator Line -->
+            <line>
+                <reportElement x="0" y="75" width="555" height="1"/>
+                <graphicElement>
+                    <pen lineWidth="1.0" lineColor="#000000"/>
+                </graphicElement>
+            </line>
+        </band>
+    </title>
+
+    <pageHeader>
+        <band height="40">
+            <staticText>
+                <reportElement x="0" y="10" width="555" height="20" forecolor="#333333"/>
+                <text><![CDATA[Salary Payment Advice]]></text>
+            </staticText>
+        </band>
+    </pageHeader>
+
+    <detail>
+        <band height="400">
+            <!-- Employee Information -->
+            <staticText>
+                <reportElement x="0" y="0" width="150" height="20" backcolor="#f0f0f0"/>
+                <text><![CDATA[Employee Information]]></text>
+            </staticText>
+
+            <staticText>
+                <reportElement x="0" y="25" width="100" height="20"/>
+                <text><![CDATA[Employee Name:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="100" y="25" width="200" height="20"/>
+                <textFieldExpression><![CDATA[$P{EMPLOYEE_NAME}]]></textFieldExpression>
+            </textField>
+
+            <staticText>
+                <reportElement x="0" y="45" width="100" height="20"/>
+                <text><![CDATA[Employee ID:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="100" y="45" width="200" height="20"/>
+                <textFieldExpression><![CDATA[$P{EMPLOYEE_ID}]]></textFieldExpression>
+            </textField>
+
+            <staticText>
+                <reportElement x="0" y="65" width="100" height="20"/>
+                <text><![CDATA[Designation:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="100" y="65" width="200" height="20"/>
+                <textFieldExpression><![CDATA[$P{DESIGNATION}]]></textFieldExpression>
+            </textField>
+
+            <staticText>
+                <reportElement x="0" y="85" width="100" height="20"/>
+                <text><![CDATA[Department:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="100" y="85" width="200" height="20"/>
+                <textFieldExpression><![CDATA[$P{DEPARTMENT}]]></textFieldExpression>
+            </textField>
+
+            <staticText>
+                <reportElement x="0" y="105" width="100" height="20"/>
+                <text><![CDATA[Pay Period:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="100" y="105" width="200" height="20"/>
+                <textFieldExpression><![CDATA[$P{PAY_PERIOD}]]></textFieldExpression>
+            </textField>
+
+            <!-- Earnings Section -->
+            <staticText>
+                <reportElement x="0" y="135" width="150" height="20" backcolor="#f0f0f0"/>
+                <text><![CDATA[Earnings]]></text>
+            </staticText>
+
+            <staticText>
+                <reportElement x="0" y="160" width="120" height="20"/>
+                <text><![CDATA[Basic Salary:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="160" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$P{BASIC_SALARY}]]></textFieldExpression>
+            </textField>
+
+            <staticText>
+                <reportElement x="0" y="180" width="120" height="20"/>
+                <text><![CDATA[House Rent:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="180" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$P{HOUSE_RENT}]]></textFieldExpression>
+            </textField>
+
+            <staticText>
+                <reportElement x="0" y="200" width="120" height="20"/>
+                <text><![CDATA[Medical Allowance:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="200" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$P{MEDICAL_ALLOWANCE}]]></textFieldExpression>
+            </textField>
+
+            <staticText>
+                <reportElement x="0" y="220" width="120" height="20"/>
+                <text><![CDATA[Transport Allowance:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="220" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$P{TRANSPORT_ALLOWANCE}]]></textFieldExpression>
+            </textField>
+
+            <staticText>
+                <reportElement x="0" y="240" width="120" height="20"/>
+                <text><![CDATA[Other Allowances:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="240" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$P{OTHER_ALLOWANCES}]]></textFieldExpression>
+            </textField>
+
+            <staticText>
+                <reportElement x="0" y="260" width="120" height="20" backcolor="#e8e8e8"/>
+                <text><![CDATA[Total Earnings:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="260" width="100" height="20" backcolor="#e8e8e8"/>
+                <textFieldExpression><![CDATA[$P{TOTAL_EARNINGS}]]></textFieldExpression>
+            </textField>
+
+            <!-- Deductions Section -->
+            <staticText>
+                <reportElement x="300" y="135" width="150" height="20" backcolor="#f0f0f0"/>
+                <text><![CDATA[Deductions]]></text>
+            </staticText>
+
+            <staticText>
+                <reportElement x="300" y="160" width="120" height="20"/>
+                <text><![CDATA[Tax Deduction:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="420" y="160" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$P{TAX_DEDUCTION}]]></textFieldExpression>
+            </textField>
+
+            <staticText>
+                <reportElement x="300" y="180" width="120" height="20"/>
+                <text><![CDATA[Other Deductions:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="420" y="180" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$P{OTHER_DEDUCTIONS}]]></textFieldExpression>
+            </textField>
+
+            <staticText>
+                <reportElement x="300" y="200" width="120" height="20" backcolor="#e8e8e8"/>
+                <text><![CDATA[Total Deductions:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="420" y="200" width="100" height="20" backcolor="#e8e8e8"/>
+                <textFieldExpression><![CDATA[$P{TOTAL_DEDUCTIONS}]]></textFieldExpression>
+            </textField>
+
+            <!-- Attendance Summary -->
+            <staticText>
+                <reportElement x="0" y="290" width="150" height="20" backcolor="#f0f0f0"/>
+                <text><![CDATA[Attendance Summary]]></text>
+            </staticText>
+
+            <staticText>
+                <reportElement x="0" y="315" width="100" height="20"/>
+                <text><![CDATA[Working Days:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="100" y="315" width="50" height="20"/>
+                <textFieldExpression><![CDATA[$P{WORKING_DAYS}]]></textFieldExpression>
+            </textField>
+
+            <staticText>
+                <reportElement x="160" y="315" width="100" height="20"/>
+                <text><![CDATA[Present Days:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="260" y="315" width="50" height="20"/>
+                <textFieldExpression><![CDATA[$P{PRESENT_DAYS}]]></textFieldExpression>
+            </textField>
+
+            <staticText>
+                <reportElement x="320" y="315" width="100" height="20"/>
+                <text><![CDATA[Absent Days:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="420" y="315" width="50" height="20"/>
+                <textFieldExpression><![CDATA[$P{ABSENT_DAYS}]]></textFieldExpression>
+            </textField>
+
+            <!-- Net Salary -->
+            <staticText>
+                <reportElement x="0" y="350" width="120" height="30" backcolor="#d4edda"/>
+                <text><![CDATA[Net Salary:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="120" y="350" width="150" height="30" backcolor="#d4edda"/>
+                <textFieldExpression><![CDATA[$P{NET_SALARY}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+
+    <pageFooter>
+        <band height="40">
+            <line>
+                <reportElement x="0" y="0" width="555" height="1"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#CCCCCC"/>
+                </graphicElement>
+            </line>
+            <staticText>
+                <reportElement x="0" y="10" width="555" height="20"/>
+                <text><![CDATA[Generated on: ]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="80" y="10" width="200" height="20"/>
+                <textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+            </textField>
+            <staticText>
+                <reportElement x="400" y="10" width="155" height="20"/>
+                <text><![CDATA[Page: $V{PAGE_NUMBER} of $V{TOTAL_PAGES}]]></text>
+            </staticText>
+        </band>
+    </pageFooter>
+
+</jasperReport>

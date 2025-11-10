@@ -1,9 +1,11 @@
 package com.garmentmanagement.garmentmanagement.Controller;
 
 import com.garmentmanagement.garmentmanagement.DTO.*;
+import com.garmentmanagement.garmentmanagement.Service.JasperPayslipService;
 import com.garmentmanagement.garmentmanagement.Service.PayrollService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,12 +19,11 @@ import java.util.Map;
 public class PayrollController {
 
     private final PayrollService payrollService;
+    private final JasperPayslipService jasperPayslipService;
 
     // ==================== SALARY STRUCTURE ENDPOINTS ====================
 
-    /**
-     * ✅ নতুন Salary Structure তৈরি করা
-     */
+
     @PostMapping("/salary-structures")
     public ResponseEntity<SalaryStructureDto> createSalaryStructure(@RequestBody SalaryStructureDto salaryStructureDto) {
         SalaryStructureDto created = payrollService.createSalaryStructure(salaryStructureDto);
@@ -280,5 +281,32 @@ public class PayrollController {
         // Note: You might need to add this method in service
         // For now returning empty, implement as needed
         return ResponseEntity.ok(List.of());
+    }
+
+
+
+    @GetMapping("/payslips/{id}/download")
+    public ResponseEntity<byte[]> downloadPayslipPdf(@PathVariable Long id) {
+        try {
+            System.out.println("📥 Download request for payslip ID: " + id);
+
+            // Generate PDF
+            byte[] pdfBytes = jasperPayslipService.generatePayslipPdf(id);
+
+            // Create filename
+            String filename = "payslip-" + id + ".pdf";
+
+            System.out.println("✅ PDF ready for download: " + filename);
+
+            return ResponseEntity.ok()
+                    .header("Content-Type", "application/pdf")
+                    .header("Content-Disposition", "attachment; filename=\"" + filename + "\"")
+                    .body(pdfBytes);
+
+        } catch (Exception e) {
+            System.err.println("❌ Error in download endpoint: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(("Error generating PDF: " + e.getMessage()).getBytes());
+        }
     }
 }

@@ -122,6 +122,12 @@
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <version>6.20.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>

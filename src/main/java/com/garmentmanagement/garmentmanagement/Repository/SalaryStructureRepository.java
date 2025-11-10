@@ -1,5 +1,6 @@
 package com.garmentmanagement.garmentmanagement.Repository;
 
+import com.garmentmanagement.garmentmanagement.Entity.Employee;
 import com.garmentmanagement.garmentmanagement.Entity.SalaryStructure;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +23,6 @@ public interface SalaryStructureRepository extends JpaRepository<SalaryStructure
 
     @Query("SELECT AVG(ss.netSalary) FROM SalaryStructure ss WHERE ss.status = 'ACTIVE'")
     Double findAverageSalary();
+
+    Optional<SalaryStructure> findByEmployee(Employee employee);
 }
