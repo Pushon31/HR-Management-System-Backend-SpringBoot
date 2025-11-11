@@ -32,7 +32,7 @@ public class UserController {
 
 
 
-    // ✅ Get all users with their roles
+    // Get all users with their roles
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         List<User> users = userRepository.findAll();
@@ -42,7 +42,7 @@ public class UserController {
         return ResponseEntity.ok(userResponses);
     }
 
-    // ✅ Update user roles
+    // Update user roles
     @PutMapping("/{userId}/roles")
     public ResponseEntity<?> updateUserRoles(
             @PathVariable Long userId,
@@ -129,7 +129,7 @@ public class UserController {
         }
     }
 
-    // ✅ Assign role to user
+    // Assign role to user
     @PostMapping("/{userId}/roles/{roleName}")
     public ResponseEntity<?> assignRoleToUser(
             @PathVariable Long userId,
@@ -147,7 +147,7 @@ public class UserController {
         return ResponseEntity.ok("Role " + roleName + " assigned to user");
     }
 
-    // ✅ Remove role from user
+    // Remove role from user
     @DeleteMapping("/{userId}/roles/{roleName}")
     public ResponseEntity<?> removeRoleFromUser(
             @PathVariable Long userId,
@@ -165,7 +165,7 @@ public class UserController {
         return ResponseEntity.ok("Role " + roleName + " removed from user");
     }
 
-    // ✅ Get users by role
+    // Get users by role
     @GetMapping("/role/{roleName}")
     public ResponseEntity<List<UserResponse>> getUsersByRole(@PathVariable String roleName) {
         Role role = roleRepository.findByName(roleName)
@@ -329,7 +329,7 @@ public class UserController {
 
             UserResponse response = convertToUserResponse(user);
 
-            System.out.println("✅ UserController: Returning user: " + response.getUsername());
+            System.out.println(" UserController: Returning user: " + response.getUsername());
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {

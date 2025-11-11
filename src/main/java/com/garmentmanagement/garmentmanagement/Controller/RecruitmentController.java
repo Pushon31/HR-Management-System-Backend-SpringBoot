@@ -21,7 +21,7 @@ public class RecruitmentController {
     // ==================== JOB POSTING ENDPOINTS ====================
 
     /**
-     * ✅ নতুন Job Posting তৈরি করা
+     * Create a new job
      */
     @PostMapping("/job-postings")
     public ResponseEntity<JobPostingDto> createJobPosting(@RequestBody JobPostingDto jobPostingDto) {
@@ -30,7 +30,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Job Posting আপডেট করা
+     * update job posting
      */
     @PutMapping("/job-postings/{id}")
     public ResponseEntity<JobPostingDto> updateJobPosting(
@@ -41,7 +41,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ ID দিয়ে Job Posting পাওয়া
+     * get job posting by id
      */
     @GetMapping("/job-postings/{id}")
     public ResponseEntity<JobPostingDto> getJobPosting(@PathVariable Long id) {
@@ -50,8 +50,8 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Job Code দিয়ে Job Posting পাওয়া
-     */
+     *  get job posting by id Job Code
+     *  */
     @GetMapping("/job-postings/code/{jobCode}")
     public ResponseEntity<JobPostingDto> getJobPostingByCode(@PathVariable String jobCode) {
         JobPostingDto jobPosting = recruitmentService.getJobPostingByCode(jobCode);
@@ -59,7 +59,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ সব Job Postings পাওয়া
+     * ALl job posting
      */
     @GetMapping("/job-postings")
     public ResponseEntity<List<JobPostingDto>> getAllJobPostings() {
@@ -68,7 +68,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Active Job Postings পাওয়া
+     * Active Job Postings
      */
     @GetMapping("/job-postings/active")
     public ResponseEntity<List<JobPostingDto>> getActiveJobPostings() {
@@ -77,7 +77,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Department-wise Job Postings পাওয়া
+     * get Departmentwise Job Postings
      */
     @GetMapping("/job-postings/department/{departmentId}")
     public ResponseEntity<List<JobPostingDto>> getJobPostingsByDepartment(@PathVariable Long departmentId) {
@@ -86,7 +86,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Job Posting Close করা
+     * Close Job Posting Close
      */
     @PutMapping("/job-postings/{id}/close")
     public ResponseEntity<Void> closeJobPosting(@PathVariable Long id) {
@@ -97,7 +97,7 @@ public class RecruitmentController {
     // ==================== CANDIDATE ENDPOINTS ====================
 
     /**
-     * ✅ নতুন Candidate তৈরি করা
+     * create new Candidate
      */
     @PostMapping("/candidates")
     public ResponseEntity<CandidateDto> createCandidate(@RequestBody CandidateDto candidateDto) {
@@ -106,7 +106,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Candidate আপডেট করা
+     * update Candidate
      */
     @PutMapping("/candidates/{id}")
     public ResponseEntity<CandidateDto> updateCandidate(
@@ -117,7 +117,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ ID দিয়ে Candidate পাওয়া
+     * ID diye Candidate pawa
      */
     @GetMapping("/candidates/{id}")
     public ResponseEntity<CandidateDto> getCandidate(@PathVariable Long id) {
@@ -126,7 +126,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Email দিয়ে Candidate পাওয়া
+     * Email diye Candidate pawa
      */
     @GetMapping("/candidates/email/{email}")
     public ResponseEntity<CandidateDto> getCandidateByEmail(@PathVariable String email) {
@@ -135,7 +135,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ সব Candidates পাওয়া
+     * getAll candidates
      */
     @GetMapping("/candidates")
     public ResponseEntity<List<CandidateDto>> getAllCandidates() {
@@ -144,7 +144,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Status অনুযায়ী Candidates পাওয়া
+     * Status wise Candidates
      */
     @GetMapping("/candidates/status/{status}")
     public ResponseEntity<List<CandidateDto>> getCandidatesByStatus(@PathVariable String status) {
@@ -153,7 +153,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Skill দিয়ে Candidates Search করা
+     * Skill wise Candidates Search
      */
     @GetMapping("/candidates/search/skill")
     public ResponseEntity<List<CandidateDto>> searchCandidatesBySkill(@RequestParam String skill) {
@@ -164,7 +164,7 @@ public class RecruitmentController {
     // ==================== APPLICATION ENDPOINTS ====================
 
     /**
-     * ✅ নতুন Application Submit করা
+     * New Application Submit
      */
     @PostMapping("/applications")
     public ResponseEntity<ApplicationDto> submitApplication(@RequestBody ApplicationDto applicationDto) {
@@ -173,7 +173,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Application ID দিয়ে Details পাওয়া
+     *  get details by Application ID
      */
     @GetMapping("/applications/{id}")
     public ResponseEntity<ApplicationDto> getApplication(@PathVariable Long id) {
@@ -182,7 +182,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Job-wise Applications পাওয়া
+     *Job-wise Applications
      */
     @GetMapping("/applications/job/{jobPostingId}")
     public ResponseEntity<List<ApplicationDto>> getApplicationsByJob(@PathVariable Long jobPostingId) {
@@ -191,7 +191,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Candidate-wise Applications পাওয়া
+     * Candidate wise Applications
      */
     @GetMapping("/applications/candidate/{candidateId}")
     public ResponseEntity<List<ApplicationDto>> getApplicationsByCandidate(@PathVariable Long candidateId) {
@@ -200,7 +200,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Application Status আপডেট করা
+     *  Application Status update
      */
     @PutMapping("/applications/{id}/status")
     public ResponseEntity<ApplicationDto> updateApplicationStatus(
@@ -212,7 +212,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Status অনুযায়ী Applications পাওয়া
+     * Status onujayi Applications
      */
     @GetMapping("/applications/status/{status}")
     public ResponseEntity<List<ApplicationDto>> getApplicationsByStatus(@PathVariable String status) {
@@ -223,7 +223,7 @@ public class RecruitmentController {
     // ==================== INTERVIEW ENDPOINTS ====================
 
     /**
-     * ✅ Interview Schedule করা
+     * Interview Schedule
      */
     @PostMapping("/interviews")
     public ResponseEntity<InterviewDto> scheduleInterview(@RequestBody InterviewDto interviewDto) {
@@ -232,7 +232,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Interview আপডেট করা
+     * update Interview
      */
     @PutMapping("/interviews/{id}")
     public ResponseEntity<InterviewDto> updateInterview(
@@ -243,8 +243,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Interview ID দিয়ে Details পাওয়া
-     */
+     * Interview ID diye interview get */
     @GetMapping("/interviews/{id}")
     public ResponseEntity<InterviewDto> getInterview(@PathVariable Long id) {
         InterviewDto interview = recruitmentService.getInterview(id);
@@ -252,7 +251,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Application-wise Interviews পাওয়া
+     *  Application wise Interviews
      */
     @GetMapping("/interviews/application/{applicationId}")
     public ResponseEntity<List<InterviewDto>> getInterviewsByApplication(@PathVariable Long applicationId) {
@@ -261,7 +260,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Upcoming Interviews পাওয়া
+     * Upcoming Interviews
      */
     @GetMapping("/interviews/upcoming")
     public ResponseEntity<List<InterviewDto>> getUpcomingInterviews() {
@@ -270,7 +269,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Interviewer-wise Interviews পাওয়া
+     * Interviewer wise Interviews
      */
     @GetMapping("/interviews/interviewer/{interviewerId}")
     public ResponseEntity<List<InterviewDto>> getInterviewsByInterviewer(@PathVariable Long interviewerId) {
@@ -279,7 +278,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Interview Feedback Submit করা
+     * Interview Feedback Submit
      */
     @PutMapping("/interviews/{id}/feedback")
     public ResponseEntity<InterviewDto> submitInterviewFeedback(
@@ -294,7 +293,7 @@ public class RecruitmentController {
     // ==================== OFFER LETTER ENDPOINTS ====================
 
     /**
-     * ✅ Offer Letter Generate করা
+     * Offer Letter Generate
      */
     @PostMapping("/offer-letters")
     public ResponseEntity<OfferLetterDto> generateOfferLetter(@RequestBody OfferLetterDto offerLetterDto) {
@@ -303,7 +302,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Offer Letter ID দিয়ে Details পাওয়া
+     *  Offer Letter ID diye  Details
      */
     @GetMapping("/offer-letters/{id}")
     public ResponseEntity<OfferLetterDto> getOfferLetter(@PathVariable Long id) {
@@ -312,7 +311,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Application ID দিয়ে Offer Letter পাওয়া
+     * Application ID diye Offer Letter pawa
      */
     @GetMapping("/offer-letters/application/{applicationId}")
     public ResponseEntity<OfferLetterDto> getOfferLetterByApplication(@PathVariable Long applicationId) {
@@ -321,7 +320,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Candidate-wise Offer Letters পাওয়া
+     * Candidate-wise Offer Letters
      */
     @GetMapping("/offer-letters/candidate/{candidateId}")
     public ResponseEntity<List<OfferLetterDto>> getOfferLettersByCandidate(@PathVariable Long candidateId) {
@@ -330,7 +329,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Offer Status আপডেট করা (Accept/Reject)
+     * updatee status(Accept/Reject)
      */
     @PutMapping("/offer-letters/{id}/status")
     public ResponseEntity<OfferLetterDto> updateOfferStatus(
@@ -344,7 +343,7 @@ public class RecruitmentController {
     // ==================== REPORTS & DASHBOARD ENDPOINTS ====================
 
     /**
-     * ✅ Recruitment Dashboard Data পাওয়া
+     * Recruitment Dashboard Data get
      */
     @GetMapping("/dashboard")
     public ResponseEntity<Map<String, Object>> getRecruitmentDashboard() {
@@ -353,7 +352,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Application Statistics পাওয়া
+     * Application Statistics get
      */
     @GetMapping("/reports/application-stats")
     public ResponseEntity<Map<String, Long>> getApplicationStatistics() {
@@ -362,7 +361,7 @@ public class RecruitmentController {
     }
 
     /**
-     * ✅ Interview Statistics পাওয়া
+     * Interview Statistics get
      */
     @GetMapping("/reports/interview-stats")
     public ResponseEntity<Map<String, Long>> getInterviewStatistics() {

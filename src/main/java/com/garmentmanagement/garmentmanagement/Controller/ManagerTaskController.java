@@ -19,7 +19,7 @@ public class ManagerTaskController {
     // ==================== MANAGER'S TEAM TASKS ====================
 
     /**
-     * ✅ নিজের টিমের সব টাস্ক দেখা
+     * seeing tasks of own team
      */
     @GetMapping("/my-team/{managerId}")
     public ResponseEntity<List<TaskDto>> getMyTeamTasks(@PathVariable Long managerId) {
@@ -28,7 +28,7 @@ public class ManagerTaskController {
     }
 
     /**
-     * ✅ নিজের টিমের Pending টাস্কগুলো দেখা
+     * Watching Pending tasks
      */
     @GetMapping("/my-team/{managerId}/pending")
     public ResponseEntity<List<TaskDto>> getMyTeamPendingTasks(@PathVariable Long managerId) {
@@ -37,7 +37,7 @@ public class ManagerTaskController {
     }
 
     /**
-     * ✅ নিজের টিমের In Progress টাস্কগুলো দেখা
+     *  own teams In Progress tasks
      */
     @GetMapping("/my-team/{managerId}/in-progress")
     public ResponseEntity<List<TaskDto>> getMyTeamInProgressTasks(@PathVariable Long managerId) {
@@ -49,7 +49,7 @@ public class ManagerTaskController {
     }
 
     /**
-     * ✅ নিজের টিমের Overdue টাস্কগুলো দেখা
+     * own teams Overdue tasks
      */
     @GetMapping("/my-team/{managerId}/overdue")
     public ResponseEntity<List<TaskDto>> getMyTeamOverdueTasks(@PathVariable Long managerId) {
@@ -58,7 +58,7 @@ public class ManagerTaskController {
     }
 
     /**
-     * ✅ নিজের টিমের Completed টাস্কগুলো দেখা
+     *  Own teams Completed Tasks
      */
     @GetMapping("/my-team/{managerId}/completed")
     public ResponseEntity<List<TaskDto>> getMyTeamCompletedTasks(@PathVariable Long managerId) {
@@ -67,7 +67,7 @@ public class ManagerTaskController {
     }
 
     /**
-     * ✅ নিজের টিমের জরুরি টাস্কগুলো দেখা
+     *  to see which tasks are urgent
      */
     @GetMapping("/my-team/{managerId}/urgent")
     public ResponseEntity<List<TaskDto>> getMyTeamUrgentTasks(@PathVariable Long managerId) {
@@ -81,8 +81,7 @@ public class ManagerTaskController {
     }
 
     /**
-     * ✅ নিজের টিমের সদস্যদের Performance দেখা
-     */
+     *  team perfomance
     @GetMapping("/my-team/{managerId}/performance")
     public ResponseEntity<Map<String, Object>> getMyTeamPerformance(@PathVariable Long managerId) {
         // This would aggregate performance of all team members
@@ -92,7 +91,7 @@ public class ManagerTaskController {
     }
 
     /**
-     * ✅ নিজের টিমের সদস্যকে নতুন টাস্ক Assign করা
+     * assignn new task to team
      */
     @PostMapping("/my-team/{managerId}/assign")
     public ResponseEntity<TaskDto> assignTaskToTeamMember(
@@ -111,7 +110,7 @@ public class ManagerTaskController {
     }
 
     /**
-     * ✅ নিজের টিমের টাস্ক আপডেট করা
+     * update own teams tasks
      */
     @PutMapping("/my-team/{managerId}/tasks/{taskId}")
     public ResponseEntity<TaskDto> updateTeamTask(
@@ -128,7 +127,7 @@ public class ManagerTaskController {
     }
 
     /**
-     * ✅ নিজের টিমের টাস্কের Status আপডেট করা
+     * update tasks
      */
     @PutMapping("/my-team/{managerId}/tasks/{taskId}/status")
     public ResponseEntity<TaskDto> updateTeamTaskStatus(
@@ -144,7 +143,7 @@ public class ManagerTaskController {
     }
 
     /**
-     * ✅ নিজের টিমের টাস্কে কমেন্ট করা
+     * givbe comment on the team task
      */
     @PostMapping("/my-team/{managerId}/tasks/{taskId}/comments")
     public ResponseEntity<TaskCommentDto> addCommentToTeamTask(
@@ -161,9 +160,7 @@ public class ManagerTaskController {
         }
     }
 
-    /**
-     * ✅ নিজের টিমের টাস্কে ফাইল আপলোড করা
-     */
+
     @PostMapping("/my-team/{managerId}/tasks/{taskId}/attachments")
     public ResponseEntity<TaskAttachmentDto> addAttachmentToTeamTask(
             @PathVariable Long managerId,
@@ -181,9 +178,7 @@ public class ManagerTaskController {
 
     // ==================== MANAGER'S PROJECTS ====================
 
-    /**
-     * ✅ নিজের টিমের প্রজেক্টগুলো দেখা
-     */
+
     @GetMapping("/my-team/{managerId}/projects")
     public ResponseEntity<List<ProjectDto>> getMyTeamProjects(@PathVariable Long managerId) {
         Long departmentId = taskService.getManagerDepartmentId(managerId);
@@ -191,9 +186,7 @@ public class ManagerTaskController {
         return ResponseEntity.ok(projects);
     }
 
-    /**
-     * ✅ নিজের টিমের জন্য নতুন প্রজেক্ট তৈরি করা
-     */
+
     @PostMapping("/my-team/{managerId}/projects")
     public ResponseEntity<ProjectDto> createProjectForTeam(
             @PathVariable Long managerId,
@@ -206,18 +199,14 @@ public class ManagerTaskController {
 
     // ==================== MANAGER DASHBOARD ====================
 
-    /**
-     * ✅ ম্যানেজার ড্যাশবোর্ড ডাটা
-     */
+
     @GetMapping("/dashboard/{managerId}")
     public ResponseEntity<Map<String, Object>> getManagerDashboard(@PathVariable Long managerId) {
         Map<String, Object> dashboard = taskService.getManagerDashboard(managerId);
         return ResponseEntity.ok(dashboard);
     }
 
-    /**
-     * ✅ আসন্ন ডেডলাইনের টাস্কগুলো (টিমের)
-     */
+
     @GetMapping("/my-team/{managerId}/upcoming-deadlines")
     public ResponseEntity<List<TaskDto>> getTeamUpcomingDeadlines(
             @PathVariable Long managerId,
@@ -226,9 +215,7 @@ public class ManagerTaskController {
         return ResponseEntity.ok(tasks);
     }
 
-    /**
-     * ✅ টিমের টাস্ক স্ট্যাটিস্টিক্স
-     */
+
     @GetMapping("/my-team/{managerId}/statistics")
     public ResponseEntity<Map<String, Object>> getTeamStatistics(@PathVariable Long managerId) {
         List<TaskDto> teamTasks = taskService.getTasksByManager(managerId);
@@ -265,9 +252,7 @@ public class ManagerTaskController {
         return ResponseEntity.ok(stats);
     }
 
-    /**
-     * ✅ টিমের টাস্ক সার্চ করা
-     */
+
     @GetMapping("/my-team/{managerId}/search")
     public ResponseEntity<List<TaskDto>> searchTeamTasks(
             @PathVariable Long managerId,
@@ -286,7 +271,7 @@ public class ManagerTaskController {
     // ==================== HELPER METHODS ====================
 
     /**
-     * ✅ Helper method: Check if employee is in manager's team
+     * Helper method: Check if employee is in manager's team
      */
     private boolean isEmployeeInManagerTeam(Long employeeId, Long managerId) {
         try {

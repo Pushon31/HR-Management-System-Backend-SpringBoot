@@ -24,60 +24,42 @@ public class LeaveController {
 
     // ==================== LEAVE TYPE ENDPOINTS ====================
 
-    /**
-     * ✅ নতুন Leave Type তৈরি করা
-     * বাংলায়: নতুন ছুটির ধরন তৈরি
-     */
+
     @PostMapping("/types")
     public ResponseEntity<LeaveTypeDto> createLeaveType(@RequestBody LeaveTypeDto leaveTypeDto) {
         LeaveTypeDto createdLeaveType = leaveService.createLeaveType(leaveTypeDto);
         return ResponseEntity.ok(createdLeaveType);
     }
 
-    /**
-     * ✅ সব Leave Types পাওয়া
-     * বাংলায়: সব ছুটির ধরনগুলো পাওয়া
-     */
+
     @GetMapping("/types")
     public ResponseEntity<List<LeaveTypeDto>> getAllLeaveTypes() {
         List<LeaveTypeDto> leaveTypes = leaveService.getAllLeaveTypes();
         return ResponseEntity.ok(leaveTypes);
     }
 
-    /**
-     * ✅ শুধু Active Leave Types পাওয়া
-     * বাংলায়: শুধু সক্রিয় ছুটির ধরনগুলো পাওয়া
-     */
+
     @GetMapping("/types/active")
     public ResponseEntity<List<LeaveTypeDto>> getActiveLeaveTypes() {
         List<LeaveTypeDto> leaveTypes = leaveService.getActiveLeaveTypes();
         return ResponseEntity.ok(leaveTypes);
     }
 
-    /**
-     * ✅ ID দিয়ে Leave Type পাওয়া
-     * বাংলায়: আইডি দিয়ে ছুটির ধরন পাওয়া
-     */
+
     @GetMapping("/types/{id}")
     public ResponseEntity<LeaveTypeDto> getLeaveTypeById(@PathVariable Long id) {
         LeaveTypeDto leaveType = leaveService.getLeaveTypeById(id);
         return ResponseEntity.ok(leaveType);
     }
 
-    /**
-     * ✅ Code দিয়ে Leave Type পাওয়া
-     * বাংলায়: কোড দিয়ে ছুটির ধরন পাওয়া (যেমন: "AL", "SL")
-     */
+
     @GetMapping("/types/code/{code}")
     public ResponseEntity<LeaveTypeDto> getLeaveTypeByCode(@PathVariable String code) {
         LeaveTypeDto leaveType = leaveService.getLeaveTypeByCode(code);
         return ResponseEntity.ok(leaveType);
     }
 
-    /**
-     * ✅ Leave Type আপডেট করা
-     * বাংলায়: ছুটির ধরন আপডেট করা
-     */
+
     @PutMapping("/types/{id}")
     public ResponseEntity<LeaveTypeDto> updateLeaveType(
             @PathVariable Long id,
@@ -86,10 +68,7 @@ public class LeaveController {
         return ResponseEntity.ok(updatedLeaveType);
     }
 
-    /**
-     * ✅ Leave Type ডিলিট করা
-     * বাংলায়: ছুটির ধরন ডিলিট করা
-     */
+
     @DeleteMapping("/types/{id}")
     public ResponseEntity<Void> deleteLeaveType(@PathVariable Long id) {
         leaveService.deleteLeaveType(id);
@@ -98,30 +77,21 @@ public class LeaveController {
 
     // ==================== LEAVE APPLICATION ENDPOINTS ====================
 
-    /**
-     * ✅ নতুন Leave Application তৈরি করা (ছুটির আবেদন)
-     * বাংলায়: নতুন ছুটির আবেদন জমা দেওয়া
-     */
+
     @PostMapping("/applications")
     public ResponseEntity<LeaveApplicationDto> applyForLeave(@RequestBody LeaveApplicationDto leaveApplicationDto) {
         LeaveApplicationDto createdApplication = leaveService.applyForLeave(leaveApplicationDto);
         return ResponseEntity.ok(createdApplication);
     }
 
-    /**
-     * ✅ সব Leave Applications পাওয়া (Admin)
-     * বাংলায়: সব ছুটির আবেদনগুলো দেখা (এডমিনের জন্য)
-     */
+
     @GetMapping("/applications")
     public ResponseEntity<List<LeaveApplicationDto>> getAllLeaveApplications() {
         List<LeaveApplicationDto> applications = leaveService.getAllLeaveApplications();
         return ResponseEntity.ok(applications);
     }
 
-    /**
-     * ✅ নির্দিষ্ট Employee-এর সব Leave Applications পাওয়া
-     * বাংলায়: একটি কর্মচারীর সব ছুটির আবেদন দেখা
-     */
+
     @GetMapping("/applications/employee/{employeeId}")
     public ResponseEntity<List<LeaveApplicationDto>> getLeaveApplicationsByEmployee(
             @PathVariable Long employeeId) {
@@ -129,10 +99,7 @@ public class LeaveController {
         return ResponseEntity.ok(applications);
     }
 
-    /**
-     * ✅ Leave Application ID দিয়ে Details পাওয়া
-     * বাংলায়: আবেদন আইডি দিয়ে ছুটির বিস্তারিত তথ্য পাওয়া
-     */
+
     @GetMapping("/applications/{id}")
     public ResponseEntity<LeaveApplicationDto> getLeaveApplicationById(@PathVariable Long id) {
         LeaveApplicationDto application = leaveService.getLeaveApplicationById(id);
@@ -140,8 +107,8 @@ public class LeaveController {
     }
 
     /**
-     * ✅ Pending Leave Applications পাওয়া (Admin/Manager)
-     * বাংলায়: মঞ্জুরির জন্য অপেক্ষমান ছুটির আবেদনগুলো দেখা
+     *  Pending Leave Applications (Admin/Manager)
+     *
      */
     @GetMapping("/applications/pending")
     public ResponseEntity<List<LeaveApplicationDto>> getPendingLeaveApplications() {
@@ -150,8 +117,8 @@ public class LeaveController {
     }
 
     /**
-     * ✅ Manager-এর জন্য Pending Leaves পাওয়া
-     * বাংলায়: একজন ম্যানেজারের টিমের অপেক্ষমান ছুটির আবেদনগুলো দেখা
+     * Manager-Pending Leaves
+     *
      */
     @GetMapping("/applications/manager/{managerId}/pending")
     public ResponseEntity<List<LeaveApplicationDto>> getPendingLeavesForManager(
@@ -161,8 +128,7 @@ public class LeaveController {
     }
 
     /**
-     * ✅ Status অনুযায়ী Leave Applications পাওয়া
-     * বাংলায়: অবস্থা অনুসারে ছুটির আবেদনগুলো ফিল্টার করা
+     * Status Leave Applications
      */
     @GetMapping("/applications/status/{status}")
     public ResponseEntity<List<LeaveApplicationDto>> getLeaveApplicationsByStatus(
@@ -173,8 +139,8 @@ public class LeaveController {
     }
 
     /**
-     * ✅ Date Range অনুযায়ী Leave Applications পাওয়া
-     * বাংলায়: তারিখের range অনুসারে ছুটির আবেদনগুলো দেখা
+     * Date Range  Leave Applications
+
      */
     @GetMapping("/applications/date-range")
     public ResponseEntity<List<LeaveApplicationDto>> getLeavesByDateRange(
@@ -185,8 +151,8 @@ public class LeaveController {
     }
 
     /**
-     * ✅ Department-wise Leave Applications পাওয়া
-     * বাংলায়: ডিপার্টমেন্ট অনুসারে ছুটির আবেদনগুলো দেখা
+     *  Department-wise Leave Applications
+     *
      */
     @GetMapping("/applications/department/{departmentId}")
     public ResponseEntity<List<LeaveApplicationDto>> getLeavesByDepartment(
@@ -198,8 +164,8 @@ public class LeaveController {
     // ==================== LEAVE APPROVAL WORKFLOW ENDPOINTS ====================
 
     /**
-     * ✅ Leave Application Approve করা (Manager/Admin)
-     * বাংলায়: ছুটির আবেদন মঞ্জুর করা
+     * Leave Application Approve (Manager/Admin)
+     *
      */
     @PutMapping("/applications/{leaveId}/approve")
     public ResponseEntity<LeaveApplicationDto> approveLeave(
@@ -211,8 +177,8 @@ public class LeaveController {
     }
 
     /**
-     * ✅ Leave Application Reject করা (Manager/Admin)
-     * বাংলায়: ছুটির আবেদন প্রত্যাখ্যান করা
+     * Leave Application Reject (Manager/Admin)
+
      */
     @PutMapping("/applications/{leaveId}/reject")
     public ResponseEntity<LeaveApplicationDto> rejectLeave(
@@ -224,8 +190,8 @@ public class LeaveController {
     }
 
     /**
-     * ✅ Leave Application Cancel করা (Employee)
-     * বাংলায়: ছুটির আবেদন বাতিল করা (কর্মচারী নিজে)
+     * Leave Application Cancel (Employee)
+     *
      */
     @PutMapping("/applications/{leaveId}/cancel")
     public ResponseEntity<LeaveApplicationDto> cancelLeave(
@@ -236,8 +202,8 @@ public class LeaveController {
     }
 
     /**
-     * ✅ Leave Application আপডেট করা (Employee - শুধু PENDING অবস্থায়)
-     * বাংলায়: ছুটির আবেদন আপডেট করা (শুধু অপেক্ষমান অবস্থায়)
+     * Leave Application update while pending
+     *
      */
     @PutMapping("/applications/{id}")
     public ResponseEntity<LeaveApplicationDto> updateLeaveApplication(
@@ -250,8 +216,8 @@ public class LeaveController {
     // ==================== LEAVE BALANCE ENDPOINTS ====================
 
     /**
-     * ✅ Employee-এর Leave Balance পাওয়া
-     * বাংলায়: একজন কর্মচারীর ছুটির ব্যালেন্স দেখা
+     *  Employee- Leave Balance
+
      */
     @GetMapping("/balance/employee/{employeeId}")
     public ResponseEntity<List<LeaveBalanceDto>> getEmployeeLeaveBalances(
@@ -261,8 +227,8 @@ public class LeaveController {
     }
 
     /**
-     * ✅ Specific Leave Type-এর Balance পাওয়া
-     * বাংলায়: নির্দিষ্ট ধরনের ছুটির ব্যালেন্স দেখা
+     *  Specific Leave Type-Balance
+     *
      */
     @GetMapping("/balance/employee/{employeeId}/type/{leaveTypeId}")
     public ResponseEntity<LeaveBalanceDto> getLeaveBalance(
@@ -275,8 +241,8 @@ public class LeaveController {
     // ==================== DASHBOARD & REPORTING ENDPOINTS ====================
 
     /**
-     * ✅ Leave Statistics পাওয়া (Dashboard-এর জন্য)
-     * বাংলায়: ছুটি সম্পর্কিত পরিসংখ্যান (ড্যাশবোর্ডের জন্য)
+     *  Leave Statistics (Dashboard)
+
      */
     @GetMapping("/statistics")
     public ResponseEntity<Map<String, Long>> getLeaveStatistics() {
@@ -285,8 +251,8 @@ public class LeaveController {
     }
 
     /**
-     * ✅ Employee-specific Leave Statistics
-     * বাংলায়: নির্দিষ্ট কর্মচারীর ছুটি পরিসংখ্যান
+     * Employee-specific Leave Statistics
+
      */
     @GetMapping("/statistics/employee/{employeeId}")
     public ResponseEntity<Map<String, Long>> getEmployeeLeaveStatistics(
@@ -296,8 +262,8 @@ public class LeaveController {
     }
 
     /**
-     * ✅ Upcoming Leaves পাওয়া (Calendar-এর জন্য)
-     * বাংলায়: আসন্ন ছুটিগুলো দেখা (ক্যালেন্ডারের জন্য)
+     * Upcoming Leaves (Calendar)
+     *
      */
     @GetMapping("/upcoming")
     public ResponseEntity<List<LeaveApplicationDto>> getUpcomingLeaves(
@@ -307,8 +273,8 @@ public class LeaveController {
     }
 
     /**
-     * ✅ Leave Availability Check করা
-     * বাংলায়: ছুটি নেওয়া যাবে কিনা চেক করা
+     * Leave Availability Check
+
      */
     @GetMapping("/check-availability")
     public ResponseEntity<Boolean> checkLeaveAvailability(
@@ -321,8 +287,8 @@ public class LeaveController {
     }
 
     /**
-     * ✅ Yearly Leave Balances Initialize করা (Admin - Year Start-এ)
-     * বাংলায়: বছরের শুরুতে সব কর্মচারীর ছুটির ব্যালেন্স ইনিশিয়ালাইজ করা
+     * Yearly Leave Balances Initialize (Admin - Year Start)
+
      */
     @PostMapping("/initialize-yearly-balances")
     public ResponseEntity<Void> initializeYearlyLeaveBalances(@RequestParam Integer year) {

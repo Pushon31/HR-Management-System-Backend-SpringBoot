@@ -126,7 +126,7 @@ public class AuthController {
                 }
             });
 
-            // ✅ Check if any role requires employee record (exclude admin)
+            // Check if any role requires employee record (exclude admin)
             List<String> employeeRoles = Arrays.asList("manager", "hr", "accountant", "employee");
             shouldCreateEmployee = strRoles.stream().anyMatch(employeeRoles::contains);
 
@@ -139,13 +139,13 @@ public class AuthController {
         user.setRoles(roles);
         User savedUser = userRepository.save(user);
 
-        // ✅ Auto-create employee record for employee roles (not for admin)
+        // Auto-create employee record for employee roles (not for admin)
         Employee employee = null;
         if (shouldCreateEmployee) {
             employee = createEmployeeRecord(savedUser,designation);
         }
 
-        // ✅ Return enhanced response
+        //Return enhanced response
         Map<String, Object> response = new HashMap<>();
         response.put("message", "User registered successfully!");
         response.put("userId", savedUser.getId());
@@ -161,7 +161,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // ✅ Enhanced employee creation method
+    //Enhanced employee creation method
     private Employee createEmployeeRecord(User user, String designation) {
         try {
             // Generate unique employee ID
@@ -180,19 +180,19 @@ public class AuthController {
             employee.setEmployeeType(Employee.EmployeeType.FULL_TIME);
             employee.setJoinDate(LocalDate.now());
 
-            // ✅ Set user reference
+            //Set user reference
             employee.setUser(user);
 
             Employee savedEmployee = employeeRepository.save(employee);
 
-            // ✅ Update user with employee reference (bidirectional relationship)
+            //Update user with employee reference (bidirectional relationship)
             user.setEmployee(savedEmployee);
             userRepository.save(user);
 
-            System.out.println("✅ Auto-created employee record for: " + user.getEmail() + " with designation: " + designation);
+            System.out.println("Auto-created employee record for: " + user.getEmail() + " with designation: " + designation);
             return savedEmployee;
         } catch (Exception e) {
-            System.err.println("❌ Failed to auto-create employee record: " + e.getMessage());
+            System.err.println("Failed to auto-create employee record: " + e.getMessage());
             return null;
         }
     }

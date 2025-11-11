@@ -23,9 +23,6 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     // Filter methods
     List<Department> findByStatus(Department.DepartmentStatus status);
 
-//    // Custom query for departments with employees count
-//    @Query("SELECT d FROM Department d LEFT JOIN FETCH d.employees")
-//    List<Department> findAllWithEmployees();
 
     // Find departments by location
     List<Department> findByLocationContainingIgnoreCase(String location);
@@ -35,12 +32,9 @@ public interface DepartmentRepository extends JpaRepository<Department, Long> {
     Optional<Department> findByDepartmentHeadId(Long employeeId);
 
 
-    // ❌ REMOVE or COMMENT OUT this method - It's causing issues
-    // @EntityGraph(attributePaths = {"employees"})
-    // @Query("SELECT d FROM Department d")
-    // List<Department> findAllWithEmployees();
 
-    // ✅ Use this simpler method instead
+
+    //  Use this simpler method instead
     @Query("SELECT d FROM Department d LEFT JOIN FETCH d.departmentHead")
     List<Department> findAllWithDepartmentHead();
 }

@@ -18,18 +18,14 @@ public class EmployeeTaskController {
 
     // ==================== EMPLOYEE'S OWN TASKS ====================
 
-    /**
-     * ✅ নিজের সব টাস্ক দেখা
-     */
+
     @GetMapping("/my-tasks/{employeeId}")
     public ResponseEntity<List<TaskDto>> getMyTasks(@PathVariable Long employeeId) {
         List<TaskDto> tasks = taskService.getTasksByEmployee(employeeId);
         return ResponseEntity.ok(tasks);
     }
 
-    /**
-     * ✅ নিজের Pending টাস্কগুলো দেখা
-     */
+
     @GetMapping("/my-tasks/{employeeId}/pending")
     public ResponseEntity<List<TaskDto>> getMyPendingTasks(@PathVariable Long employeeId) {
         List<TaskDto> tasks = taskService.getTasksByEmployee(employeeId)
@@ -39,9 +35,7 @@ public class EmployeeTaskController {
         return ResponseEntity.ok(tasks);
     }
 
-    /**
-     * ✅ নিজের In Progress টাস্কগুলো দেখা
-     */
+
     @GetMapping("/my-tasks/{employeeId}/in-progress")
     public ResponseEntity<List<TaskDto>> getMyInProgressTasks(@PathVariable Long employeeId) {
         List<TaskDto> tasks = taskService.getTasksByEmployee(employeeId)
@@ -51,9 +45,7 @@ public class EmployeeTaskController {
         return ResponseEntity.ok(tasks);
     }
 
-    /**
-     * ✅ নিজের Completed টাস্কগুলো দেখা
-     */
+
     @GetMapping("/my-tasks/{employeeId}/completed")
     public ResponseEntity<List<TaskDto>> getMyCompletedTasks(@PathVariable Long employeeId) {
         List<TaskDto> tasks = taskService.getTasksByEmployee(employeeId)
@@ -63,9 +55,7 @@ public class EmployeeTaskController {
         return ResponseEntity.ok(tasks);
     }
 
-    /**
-     * ✅ নিজের Overdue টাস্কগুলো দেখা
-     */
+
     @GetMapping("/my-tasks/{employeeId}/overdue")
     public ResponseEntity<List<TaskDto>> getMyOverdueTasks(@PathVariable Long employeeId) {
         List<TaskDto> tasks = taskService.getTasksByEmployee(employeeId)
@@ -75,9 +65,7 @@ public class EmployeeTaskController {
         return ResponseEntity.ok(tasks);
     }
 
-    /**
-     * ✅ নিজের জরুরি টাস্কগুলো দেখা
-     */
+
     @GetMapping("/my-tasks/{employeeId}/urgent")
     public ResponseEntity<List<TaskDto>> getMyUrgentTasks(@PathVariable Long employeeId) {
         List<TaskDto> tasks = taskService.getTasksByEmployee(employeeId)
@@ -89,9 +77,7 @@ public class EmployeeTaskController {
         return ResponseEntity.ok(tasks);
     }
 
-    /**
-     * ✅ নির্দিষ্ট টাস্কের ডিটেইলস দেখা (শুধু নিজের টাস্ক)
-     */
+
     @GetMapping("/my-tasks/{employeeId}/{taskId}")
     public ResponseEntity<TaskDto> getMyTaskDetails(
             @PathVariable Long employeeId,
@@ -107,9 +93,7 @@ public class EmployeeTaskController {
 
     // ==================== TASK ACTIONS (EMPLOYEE) ====================
 
-    /**
-     * ✅ নিজের টাস্কের প্রোগ্রেস আপডেট করা
-     */
+
     @PutMapping("/my-tasks/{employeeId}/{taskId}/progress")
     public ResponseEntity<TaskDto> updateMyTaskProgress(
             @PathVariable Long employeeId,
@@ -124,9 +108,7 @@ public class EmployeeTaskController {
         }
     }
 
-    /**
-     * ✅ নিজের টাস্কের Status আপডেট করা
-     */
+
     @PutMapping("/my-tasks/{employeeId}/{taskId}/status")
     public ResponseEntity<TaskDto> updateMyTaskStatus(
             @PathVariable Long employeeId,
@@ -141,9 +123,7 @@ public class EmployeeTaskController {
         }
     }
 
-    /**
-     * ✅ নিজের টাস্কে কমেন্ট করা
-     */
+
     @PostMapping("/my-tasks/{employeeId}/{taskId}/comments")
     public ResponseEntity<TaskCommentDto> addCommentToMyTask(
             @PathVariable Long employeeId,
@@ -160,9 +140,7 @@ public class EmployeeTaskController {
         }
     }
 
-    /**
-     * ✅ নিজের টাস্কে ফাইল আপলোড করা
-     */
+
     @PostMapping("/my-tasks/{employeeId}/{taskId}/attachments")
     public ResponseEntity<TaskAttachmentDto> addAttachmentToMyTask(
             @PathVariable Long employeeId,
@@ -179,9 +157,7 @@ public class EmployeeTaskController {
         }
     }
 
-    /**
-     * ✅ নিজের টাস্কের কমেন্টগুলো দেখা
-     */
+
     @GetMapping("/my-tasks/{employeeId}/{taskId}/comments")
     public ResponseEntity<List<TaskCommentDto>> getMyTaskComments(
             @PathVariable Long employeeId,
@@ -195,9 +171,7 @@ public class EmployeeTaskController {
         }
     }
 
-    /**
-     * ✅ নিজের টাস্কের ফাইলগুলো দেখা
-     */
+
     @GetMapping("/my-tasks/{employeeId}/{taskId}/attachments")
     public ResponseEntity<List<TaskAttachmentDto>> getMyTaskAttachments(
             @PathVariable Long employeeId,
@@ -213,27 +187,21 @@ public class EmployeeTaskController {
 
     // ==================== EMPLOYEE DASHBOARD ====================
 
-    /**
-     * ✅ এমপ্লয়ী ড্যাশবোর্ড ডাটা
-     */
+
     @GetMapping("/dashboard/{employeeId}")
     public ResponseEntity<Map<String, Object>> getEmployeeDashboard(@PathVariable Long employeeId) {
         Map<String, Object> dashboard = taskService.getEmployeeDashboard(employeeId);
         return ResponseEntity.ok(dashboard);
     }
 
-    /**
-     * ✅ নিজের পারফরমেন্স স্ট্যাটস দেখা
-     */
+
     @GetMapping("/performance/{employeeId}")
     public ResponseEntity<Map<String, Object>> getMyPerformance(@PathVariable Long employeeId) {
         Map<String, Object> performance = taskService.getEmployeePerformance(employeeId);
         return ResponseEntity.ok(performance);
     }
 
-    /**
-     * ✅ আসন্ন ডেডলাইনের টাস্কগুলো (নিজের)
-     */
+
     @GetMapping("/my-tasks/{employeeId}/upcoming-deadlines")
     public ResponseEntity<List<TaskDto>> getMyUpcomingDeadlines(
             @PathVariable Long employeeId,
@@ -242,9 +210,7 @@ public class EmployeeTaskController {
         return ResponseEntity.ok(tasks);
     }
 
-    /**
-     * ✅ নিজের টাস্ক সার্চ করা
-     */
+
     @GetMapping("/my-tasks/{employeeId}/search")
     public ResponseEntity<List<TaskDto>> searchMyTasks(
             @PathVariable Long employeeId,
@@ -258,9 +224,7 @@ public class EmployeeTaskController {
         return ResponseEntity.ok(filteredTasks);
     }
 
-    /**
-     * ✅ নিজের টাস্কের স্ট্যাটিস্টিক্স
-     */
+
     @GetMapping("/my-tasks/{employeeId}/statistics")
     public ResponseEntity<Map<String, Object>> getMyTaskStatistics(@PathVariable Long employeeId) {
         List<TaskDto> myTasks = taskService.getTasksByEmployee(employeeId);

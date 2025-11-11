@@ -34,7 +34,7 @@ public class LeaveBalanceDataInitializer implements ApplicationRunner {
         int currentYear = java.time.Year.now().getValue();
 
         if (employees.isEmpty() || activeLeaveTypes.isEmpty()) {
-            System.out.println("⚠️ No employees or leave types found for balance initialization");
+            System.out.println(" No employees or leave types found for balance initialization");
             return;
         }
 
@@ -58,7 +58,7 @@ public class LeaveBalanceDataInitializer implements ApplicationRunner {
             }
         }
 
-        System.out.println("✅ Leave balances initialized: " + createdCount + " created, " + updatedCount + " already exist");
+        System.out.println("Leave balances initialized: " + createdCount + " created, " + updatedCount + " already exist");
     }
 
     private LeaveBalance createLeaveBalance(Employee employee, LeaveType leaveType, int year) {

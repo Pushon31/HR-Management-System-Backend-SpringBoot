@@ -12,10 +12,10 @@ import java.util.List;
 @Repository
 public interface BonusRepository extends JpaRepository<Bonus, Long> {
 
-    // ✅ Employee ID (Long - primary key) দিয়ে Bonus খুঁজবেন
+    // Employee ID (Long - primary key) Bonus
     List<Bonus> findByEmployeeId(Long employeeId);
 
-    // ✅ Employee ID (String - business ID) দিয়ে Bonus খুঁজবেন
+    // Employee ID (String - business ID) দিয়ে Bonus খুঁজবেন
     @Query("SELECT b FROM Bonus b WHERE b.employee.employeeId = :employeeId")
     List<Bonus> findByEmployeeEmployeeId(@Param("employeeId") String employeeId);
 

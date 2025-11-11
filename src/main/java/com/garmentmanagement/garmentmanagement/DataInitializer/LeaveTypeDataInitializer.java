@@ -26,7 +26,7 @@ public class LeaveTypeDataInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) throws Exception {
         // Check if leave types already exist
         if (leaveTypeRepository.count() == 0) {
-            System.out.println("🚀 Creating default leave types...");
+            System.out.println("Creating default leave types...");
 
             List<LeaveType> defaultLeaveTypes = Arrays.asList(
                     createLeaveType("Sick Leave", "SL", LeaveType.LeaveCategory.SICK,
@@ -49,9 +49,9 @@ public class LeaveTypeDataInitializer implements ApplicationRunner {
             );
 
             leaveTypeRepository.saveAll(defaultLeaveTypes);
-            System.out.println("✅ Default leave types created successfully!");
+            System.out.println("Default leave types created successfully!");
         } else {
-            System.out.println("✅ Leave types already exist in database.");
+            System.out.println("Leave types already exist in database.");
         }
     }
 
@@ -79,7 +79,7 @@ public class LeaveTypeDataInitializer implements ApplicationRunner {
         boolean currentYearBalancesExist = leaveBalanceRepository.countByYear(currentYear) > 0;
 
         if (!currentYearBalancesExist) {
-            System.out.println("🔄 Initializing leave balances for year: " + currentYear);
+            System.out.println("Initializing leave balances for year: " + currentYear);
 
             // Get balances from previous year for carry forward calculation
             List<LeaveBalance> previousYearBalances = leaveBalanceRepository.findByYear(previousYear);
@@ -105,7 +105,7 @@ public class LeaveTypeDataInitializer implements ApplicationRunner {
                 }
             }
 
-            System.out.println("✅ Yearly leave balances initialized for " + currentYear);
+            System.out.println("Yearly leave balances initialized for " + currentYear);
         }
     }
 

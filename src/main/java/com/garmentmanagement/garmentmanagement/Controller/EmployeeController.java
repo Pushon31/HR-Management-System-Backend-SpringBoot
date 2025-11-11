@@ -60,7 +60,7 @@ import java.util.Map;
         public ResponseEntity<List<EmployeeDto>> getEmployeesByType(
                 @PathVariable String employeeType) {
 
-            // ✅ Convert String to Enum
+            //Convert String to Enum
             Employee.EmployeeType type = Employee.EmployeeType.valueOf(employeeType.toUpperCase());
             List<EmployeeDto> employees = employeeService.getEmployeesByType(type);
             return ResponseEntity.ok(employees);
@@ -78,7 +78,7 @@ import java.util.Map;
             return ResponseEntity.ok().build();
         }
 
-        // ✅ Add these missing endpoints in EmployeeController:
+        //Add these missing endpoints in EmployeeController:
 
         @GetMapping("/status/{status}")
         public ResponseEntity<List<EmployeeDto>> getEmployeesByStatus(@PathVariable String status) {
