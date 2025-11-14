@@ -1,6 +1,5 @@
 package com.garmentmanagement.garmentmanagement.Service.Implementation;
 
-
 import com.garmentmanagement.garmentmanagement.DTO.AttendanceDto;
 import com.garmentmanagement.garmentmanagement.Entity.Attendance;
 import com.garmentmanagement.garmentmanagement.Entity.Employee;
@@ -30,16 +29,21 @@ public class AttendanceServiceImplementation implements AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final EmployeeRepository employeeRepository;
     private final ModelMapper modelMapper;
+    private final LocationVerificationService locationService;
 
-    private final LocalTime SHIFT_START = LocalTime.of(9, 0); //9 am
+    private final LocalTime SHIFT_START = LocalTime.of(9, 0); // 9 am
     private final LocalTime SHIFT_END = LocalTime.of(18, 0);
     private final int GRACE_PERIOD = 15;
 
-
-
     @Override
     public AttendanceDto checkIn(String employeeId) {
-        // 1. Find employee by business ID (employeeId)
+        // Default check-in without location (for backward compatibility)
+        return checkIn(employeeId, null, null, "DESKTOP");
+    }
+
+    @Override
+    public AttendanceDto checkIn(String employeeId, Double latitude, Double longitude, String deviceType) {
+        // 1. Find employee by business ID
         Employee employee = employeeRepository.findByEmployeeId(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
@@ -49,27 +53,38 @@ public class AttendanceServiceImplementation implements AttendanceService {
             throw new RuntimeException("Already checked in for today");
         }
 
-        // 3. Create new attendance
+        // 3. Verify location if coordinates provided
+        boolean isLocationVerified = false;
+        if (latitude != null && longitude != null) {
+            isLocationVerified = locationService.isWithinOfficeRadius(latitude, longitude);
+            if (!isLocationVerified) {
+                throw new RuntimeException("You must be within office premises to check-in");
+            }
+        }
+
+        // 4. Create new attendance record
         Attendance attendance = new Attendance();
         attendance.setEmployee(employee);
         attendance.setAttendanceDate(today);
         attendance.setCheckinTime(LocalTime.now());
 
-        // 4. Calculate status based on check-in time
-        LocalTime currentTime = LocalTime.now();
-        LocalTime lateThreshold = LocalTime.of(9, 15); // 9:15 AM
-        LocalTime absentThreshold = LocalTime.of(10, 0); // 10:00 AM
-
-        if (currentTime.isBefore(lateThreshold)) {
-            attendance.setStatus(Attendance.AttendanceStatus.PRESENT);
-        } else if (currentTime.isBefore(absentThreshold)) {
-            attendance.setStatus(Attendance.AttendanceStatus.LATE);
-        } else {
-            attendance.setStatus(Attendance.AttendanceStatus.ABSENT);
+        // Set location data if available
+        if (latitude != null && longitude != null) {
+            attendance.setCheckinLatitude(latitude);
+            attendance.setCheckinLongitude(longitude);
+            attendance.setLocationVerified(isLocationVerified);
         }
 
-        // 5. Set initial values
-        attendance.setRemarks("Auto check-in");
+        attendance.setDeviceType(deviceType != null ? deviceType : "DESKTOP");
+        attendance.setIpAddress(getClientIP());
+
+        // 5. Calculate status based on check-in time
+        LocalTime currentTime = LocalTime.now();
+        attendance.setStatus(calculateStatus(currentTime));
+
+        // 6. Set initial values
+        attendance.setRemarks("Auto check-in" +
+                (isLocationVerified ? " with location verification" : ""));
         attendance.setTotalHours(0.0);
 
         Attendance savedAttendance = attendanceRepository.save(attendance);
@@ -78,6 +93,12 @@ public class AttendanceServiceImplementation implements AttendanceService {
 
     @Override
     public AttendanceDto checkOut(String employeeId) {
+        // Default check-out without location (for backward compatibility)
+        return checkOut(employeeId, null, null, "DESKTOP");
+    }
+
+    @Override
+    public AttendanceDto checkOut(String employeeId, Double latitude, Double longitude, String deviceType) {
         // 1. Find today's attendance
         Employee employee = employeeRepository.findByEmployeeId(employeeId)
                 .orElseThrow(() -> new RuntimeException("Employee not found"));
@@ -94,20 +115,37 @@ public class AttendanceServiceImplementation implements AttendanceService {
         // 3. Set check-out time
         attendance.setCheckoutTime(LocalTime.now());
 
-        // 4. Calculate total working hours
+        // 4. Set location data for check-out if available
+        if (latitude != null && longitude != null) {
+            boolean isLocationVerified = locationService.isWithinOfficeRadius(latitude, longitude);
+            attendance.setCheckoutLatitude(latitude);
+            attendance.setCheckoutLongitude(longitude);
+            // Update overall location verification status
+            if (attendance.getLocationVerified() == null || !attendance.getLocationVerified()) {
+                attendance.setLocationVerified(isLocationVerified);
+            }
+        }
+
+        // Update device type if provided
+        if (deviceType != null) {
+            attendance.setDeviceType(deviceType);
+        }
+
+        // 5. Calculate total working hours
         if (attendance.getCheckinTime() != null && attendance.getCheckoutTime() != null) {
             Duration duration = Duration.between(attendance.getCheckinTime(), attendance.getCheckoutTime());
             double hours = duration.toMinutes() / 60.0;
             attendance.setTotalHours(hours);
 
-            // 5. Update status for half-day
+            // 6. Update status for half-day
             if (hours < 4.0) {
                 attendance.setStatus(Attendance.AttendanceStatus.HALF_DAY);
             }
         }
 
-        // 6. Update remarks
-        attendance.setRemarks(attendance.getRemarks() + " | Auto check-out");
+        // 7. Update remarks
+        String locationRemark = (latitude != null && longitude != null) ? " with location" : "";
+        attendance.setRemarks(attendance.getRemarks() + " | Auto check-out" + locationRemark);
 
         Attendance savedAttendance = attendanceRepository.save(attendance);
         return convertToDto(savedAttendance);
@@ -126,13 +164,14 @@ public class AttendanceServiceImplementation implements AttendanceService {
         } else {
             // Auto-create ABSENT record if no check-in by 10 AM
             LocalTime currentTime = LocalTime.now();
-            if (currentTime.isAfter(LocalTime.of(10, 0))) { // After 10 AM
+            if (currentTime.isAfter(LocalTime.of(10, 0))) {
                 Attendance absentAttendance = new Attendance();
                 absentAttendance.setEmployee(employee);
                 absentAttendance.setAttendanceDate(today);
                 absentAttendance.setStatus(Attendance.AttendanceStatus.ABSENT);
-                absentAttendance.setRemarks("Auto-marked absent");
+                absentAttendance.setRemarks("Auto-marked absent - No check-in");
                 absentAttendance.setTotalHours(0.0);
+                absentAttendance.setLocationVerified(false);
 
                 Attendance saved = attendanceRepository.save(absentAttendance);
                 return convertToDto(saved);
@@ -149,19 +188,19 @@ public class AttendanceServiceImplementation implements AttendanceService {
 
         // Calculate counts for each status
         long totalPresent = monthlyAttendance.stream()
-                .filter(a -> a.getStatus().equals("PRESENT") || a.getStatus().equals("PRESENT"))
+                .filter(a -> "PRESENT".equals(a.getStatus()))
                 .count();
 
         long totalLate = monthlyAttendance.stream()
-                .filter(a -> a.getStatus().equals("LATE") || a.getStatus().equals("LATE"))
+                .filter(a -> "LATE".equals(a.getStatus()))
                 .count();
 
         long totalAbsent = monthlyAttendance.stream()
-                .filter(a -> a.getStatus().equals("ABSENT") || a.getStatus().equals("ABSENT"))
+                .filter(a -> "ABSENT".equals(a.getStatus()))
                 .count();
 
         long totalHalfDay = monthlyAttendance.stream()
-                .filter(a -> a.getStatus().equals("HALF_DAY") || a.getStatus().equals("HALF_DAY"))
+                .filter(a -> "HALF_DAY".equals(a.getStatus()))
                 .count();
 
         // Calculate total working days in the month
@@ -170,7 +209,7 @@ public class AttendanceServiceImplementation implements AttendanceService {
         // Calculate attendance percentage
         double attendancePercentage = 0.0;
         if (totalWorkingDays > 0) {
-            attendancePercentage = (double) (totalPresent + totalLate) / totalWorkingDays * 100;
+            attendancePercentage = (double) (totalPresent + totalLate + totalHalfDay) / totalWorkingDays * 100;
         }
 
         // Create summary map
@@ -188,7 +227,6 @@ public class AttendanceServiceImplementation implements AttendanceService {
         return summary;
     }
 
-    // ✅ PRIVATE HELPER METHOD - Only in ServiceImpl
     private int getWorkingDaysInMonth(int year, int month) {
         // Simple implementation - exclude weekends
         LocalDate start = LocalDate.of(year, month, 1);
@@ -202,7 +240,6 @@ public class AttendanceServiceImplementation implements AttendanceService {
         }
         return workingDays;
     }
-
 
     @Override
     public List<AttendanceDto> getEmployeeAttendanceHistory(String employeeId, LocalDate startDate, LocalDate endDate) {
@@ -260,6 +297,8 @@ public class AttendanceServiceImplementation implements AttendanceService {
         attendance.setCheckinTime(checkInTime);
         attendance.setStatus(calculateStatus(checkInTime));
         attendance.setRemarks("Manual check-in by admin");
+        attendance.setDeviceType("ADMIN");
+        attendance.setLocationVerified(false);
 
         Attendance saved = attendanceRepository.save(attendance);
         return convertToDto(saved);
@@ -367,21 +406,34 @@ public class AttendanceServiceImplementation implements AttendanceService {
 
     private Double calculateTotalHours(LocalTime checkIn, LocalTime checkOut) {
         if (checkIn == null || checkOut == null) return 0.0;
-        long minutes = java.time.Duration.between(checkIn, checkOut).toMinutes();
+        long minutes = Duration.between(checkIn, checkOut).toMinutes();
         return minutes / 60.0;
     }
 
+    private String getClientIP() {
+        // Implement IP address retrieval (you can use HttpServletRequest in controller)
+        // For now, return placeholder
+        return "UNKNOWN";
+    }
+
     private AttendanceDto convertToDto(Attendance attendance) {
-        // ❌ Remove ModelMapper - manually map everything
         AttendanceDto dto = new AttendanceDto();
 
-        // ✅ Manual mapping for ALL fields
+        // Basic fields
         dto.setId(attendance.getId());
         dto.setAttendanceDate(attendance.getAttendanceDate());
-        dto.setCheckinTime(attendance.getCheckinTime());  // ✅ This was missing!
-        dto.setCheckoutTime(attendance.getCheckoutTime()); // ✅ This was missing!
+        dto.setCheckinTime(attendance.getCheckinTime());
+        dto.setCheckoutTime(attendance.getCheckoutTime());
         dto.setTotalHours(attendance.getTotalHours());
         dto.setRemarks(attendance.getRemarks());
+
+        // Location fields
+        dto.setCheckinLatitude(attendance.getCheckinLatitude());
+        dto.setCheckinLongitude(attendance.getCheckinLongitude());
+        dto.setCheckoutLatitude(attendance.getCheckoutLatitude());
+        dto.setCheckoutLongitude(attendance.getCheckoutLongitude());
+        dto.setLocationVerified(attendance.getLocationVerified());
+        dto.setDeviceType(attendance.getDeviceType());
 
         // Status enum to string
         if (attendance.getStatus() != null) {
@@ -403,6 +455,4 @@ public class AttendanceServiceImplementation implements AttendanceService {
 
         return dto;
     }
-
-
 }

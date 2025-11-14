@@ -52,4 +52,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     @Query("SELECT COUNT(e) FROM Employee e WHERE e.department.id = :departmentId")
     Integer countByDepartmentId(@Param("departmentId") Long departmentId);
+
+    Optional<Employee> findByUserId(Long id);
 }

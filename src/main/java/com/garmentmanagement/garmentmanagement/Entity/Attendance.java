@@ -33,4 +33,16 @@ public class Attendance extends BaseEntity {
     @Column(name = "total_hours")
     private Double totalHours;
 
+
+    private Double checkinLatitude;
+    private Double checkinLongitude;
+    private Double checkoutLatitude;
+    private Double checkoutLongitude;
+
+    private String deviceType; // MOBILE, DESKTOP
+    private String ipAddress;
+
+    private Boolean locationVerified = false;
+
+
 }

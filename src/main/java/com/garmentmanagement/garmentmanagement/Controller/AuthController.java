@@ -62,6 +62,12 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody SignupRequest signUpRequest) {
+
+
+
+        System.out.println("🔄 AuthController: Starting user registration for: " + signUpRequest.getUsername());
+        System.out.println("📧 Email: " + signUpRequest.getEmail());
+        System.out.println("👤 Roles received: " + signUpRequest.getRoles());
         // Check if username exists
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             return ResponseEntity.badRequest().body(
@@ -96,53 +102,92 @@ public class AuthController {
                     .orElseThrow(() -> new RuntimeException("Error: Employee role not found."));
             roles.add(employeeRole);
             shouldCreateEmployee = true;
+            System.out.println("✅ No roles provided, defaulting to EMPLOYEE");
         } else {
+            System.out.println("🔍 Processing roles: " + strRoles);
+
             strRoles.forEach(role -> {
-                switch (role) {
+                // Handle both "ROLE_XXX" and "XXX" formats
+                String roleName = role.startsWith("ROLE_") ? role.substring(5).toLowerCase() : role.toLowerCase();
+                System.out.println("🔧 Processing role: " + role + " -> normalized: " + roleName);
+
+                switch (roleName) {
                     case "admin":
                         Role adminRole = roleRepository.findByName(Role.ROLE_ADMIN)
                                 .orElseThrow(() -> new RuntimeException("Error: Admin role not found."));
                         roles.add(adminRole);
+                        System.out.println("👑 Added ADMIN role");
                         break;
                     case "manager":
                         Role managerRole = roleRepository.findByName(Role.ROLE_MANAGER)
                                 .orElseThrow(() -> new RuntimeException("Error: Manager role not found."));
                         roles.add(managerRole);
+                        System.out.println("💼 Added MANAGER role");
                         break;
                     case "hr":
                         Role hrRole = roleRepository.findByName(Role.ROLE_HR)
                                 .orElseThrow(() -> new RuntimeException("Error: HR role not found."));
                         roles.add(hrRole);
+                        System.out.println("📋 Added HR role");
                         break;
                     case "accountant":
                         Role accountantRole = roleRepository.findByName(Role.ROLE_ACCOUNTANT)
                                 .orElseThrow(() -> new RuntimeException("Error: Accountant role not found."));
                         roles.add(accountantRole);
+                        System.out.println("💰 Added ACCOUNTANT role");
                         break;
                     default:
                         Role employeeRole = roleRepository.findByName(Role.ROLE_EMPLOYEE)
                                 .orElseThrow(() -> new RuntimeException("Error: Employee role not found."));
                         roles.add(employeeRole);
+                        System.out.println("👤 Added EMPLOYEE role (default)");
                 }
             });
 
             // Check if any role requires employee record (exclude admin)
             List<String> employeeRoles = Arrays.asList("manager", "hr", "accountant", "employee");
-            shouldCreateEmployee = strRoles.stream().anyMatch(employeeRoles::contains);
+            shouldCreateEmployee = strRoles.stream().anyMatch(role -> {
+                String roleName = role.startsWith("ROLE_") ? role.substring(5).toLowerCase() : role.toLowerCase();
+                boolean requiresEmployee = employeeRoles.contains(roleName);
+                System.out.println("🔍 Role " + role + " requires employee: " + requiresEmployee);
+                return requiresEmployee;
+            });
+
+            System.out.println("✅ Should create employee: " + shouldCreateEmployee);
+
 
             // Set designation based on highest role
-            if (strRoles.contains("manager")) designation = "Manager";
-            else if (strRoles.contains("hr")) designation = "HR Manager";
-            else if (strRoles.contains("accountant")) designation = "Accountant";
+            for (String role : strRoles) {
+                String roleName = role.startsWith("ROLE_") ? role.substring(5).toLowerCase() : role.toLowerCase();
+                if (roleName.equals("manager")) {
+                    designation = "Manager";
+                    break;
+                } else if (roleName.equals("hr")) {
+                    designation = "HR Manager";
+                } else if (roleName.equals("accountant")) {
+                    designation = "Accountant";
+                }
+            }
+            System.out.println("🎯 Designation determined: " + designation);
         }
 
         user.setRoles(roles);
         User savedUser = userRepository.save(user);
 
+        System.out.println("👤 User saved with ID: " + savedUser.getId());
+
         // Auto-create employee record for employee roles (not for admin)
         Employee employee = null;
         if (shouldCreateEmployee) {
-            employee = createEmployeeRecord(savedUser,designation);
+            System.out.println("🔄 Creating employee record...");
+            employee = createEmployeeRecord(savedUser, designation);
+            if (employee != null) {
+                System.out.println("✅ Employee created with ID: " + employee.getId());
+            } else {
+                System.out.println("❌ Employee creation failed!");
+            }
+        } else {
+            System.out.println("⏭️ Skipping employee creation (admin role or no employee roles)");
         }
 
         //Return enhanced response
@@ -164,8 +209,11 @@ public class AuthController {
     //Enhanced employee creation method
     private Employee createEmployeeRecord(User user, String designation) {
         try {
+            System.out.println("🔄 Creating employee record for user: " + user.getEmail());
+
             // Generate unique employee ID
             String employeeId = "EMP" + System.currentTimeMillis();
+            System.out.println("📝 Generated employee ID: " + employeeId);
 
             // Create employee entity
             Employee employee = new Employee();
@@ -184,16 +232,36 @@ public class AuthController {
             employee.setUser(user);
 
             Employee savedEmployee = employeeRepository.save(employee);
+            System.out.println("✅ Employee saved with ID: " + savedEmployee.getId());
 
             //Update user with employee reference (bidirectional relationship)
             user.setEmployee(savedEmployee);
             userRepository.save(user);
+            System.out.println("✅ User updated with employee reference");
 
-            System.out.println("Auto-created employee record for: " + user.getEmail() + " with designation: " + designation);
             return savedEmployee;
         } catch (Exception e) {
-            System.err.println("Failed to auto-create employee record: " + e.getMessage());
+            System.err.println("❌ Failed to auto-create employee record: " + e.getMessage());
+            e.printStackTrace();
             return null;
+        }
+    }
+
+    @GetMapping("/check-employee-record")
+    public ResponseEntity<?> checkEmployeeRecord(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        Optional<Employee> employee = employeeRepository.findByUserId(user.getId());
+
+        if (employee.isPresent()) {
+            return ResponseEntity.ok(Map.of(
+                    "hasRecord", true,
+                    "employeeId", employee.get().getId()
+            ));
+        } else {
+            return ResponseEntity.ok(Map.of(
+                    "hasRecord", false,
+                    "employeeId", null
+            ));
         }
     }
 

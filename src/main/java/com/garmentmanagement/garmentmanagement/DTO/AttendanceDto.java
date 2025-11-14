@@ -21,4 +21,12 @@ public class AttendanceDto {
     private Double totalHours;
     private String remarks;
     private String departmentName;
+
+
+    private Double checkinLatitude;
+    private Double checkinLongitude;
+    private Double checkoutLatitude;
+    private Double checkoutLongitude;
+    private Boolean locationVerified;
+    private String deviceType;
 }
