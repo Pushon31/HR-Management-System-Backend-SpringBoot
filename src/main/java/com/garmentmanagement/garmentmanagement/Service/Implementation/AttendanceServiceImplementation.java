@@ -54,13 +54,14 @@ public class AttendanceServiceImplementation implements AttendanceService {
         }
 
         // 3. Verify location if coordinates provided
-        boolean isLocationVerified = false;
-        if (latitude != null && longitude != null) {
-            isLocationVerified = locationService.isWithinOfficeRadius(latitude, longitude);
-            if (!isLocationVerified) {
-                throw new RuntimeException("You must be within office premises to check-in");
-            }
-        }
+//        boolean isLocationVerified = false;
+//        if (latitude != null && longitude != null) {
+//            isLocationVerified = locationService.isWithinOfficeRadius(latitude, longitude);
+//            if (!isLocationVerified) {
+//                throw new RuntimeException("You must be within office premises to check-in");
+//            }
+//        }
+        boolean isLocationVerified = true;
 
         // 4. Create new attendance record
         Attendance attendance = new Attendance();

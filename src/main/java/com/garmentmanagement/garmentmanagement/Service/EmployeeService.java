@@ -27,4 +27,5 @@ public interface EmployeeService {
     List<EmployeeDto> getEmployeesWithoutManager();
     Map<Employee.EmployeeWorkType, Long> getEmployeeWorkTypeStats();
 
+    EmployeeDto getEmployeeByUserId(Long id);
 }

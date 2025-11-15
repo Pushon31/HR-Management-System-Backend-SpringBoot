@@ -92,7 +92,7 @@ public class EmployeeServiceImplementation implements EmployeeService {
 
     @Override
     public EmployeeDto updateEmployee(Long id, EmployeeDto employeeDto) {
-        Employee existing = employeeRepository.findById(id)
+        Employee existing = employeeRepository.findByUserId(id)
                 .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
 
         // Check duplicates only if values are changing
@@ -289,6 +289,16 @@ public Map<Employee.EmployeeWorkType, Long> getEmployeeWorkTypeStats() {
     }
 }
 
+    @Override
+    public EmployeeDto getEmployeeByUserId(Long userId) {
+        // Find employee by User ID
+        Employee employee = employeeRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("Employee not found for userId: " + userId));
+
+        // Convert to DTO
+        return convertToDto(employee);
+    }
+
 
     private Map<Employee.EmployeeWorkType, Long> createDefaultWorkTypeStats() {
         Map<Employee.EmployeeWorkType, Long> defaultStats = new HashMap<>();
@@ -306,6 +316,10 @@ public Map<Employee.EmployeeWorkType, Long> getEmployeeWorkTypeStats() {
         if (employee.getDepartment() != null) {
             dto.setDepartmentId(employee.getDepartment().getId());
             dto.setDepartmentName(employee.getDepartment().getName());
+        }
+
+        if (employee.getUser() != null) {
+            dto.setUserId(employee.getUser().getId());
         }
 
         if (employee.getManager() != null) {
@@ -330,6 +344,9 @@ public Map<Employee.EmployeeWorkType, Long> getEmployeeWorkTypeStats() {
         if (employee.getWorkType() != null) {
             dto.setWorkType(employee.getWorkType().name());
         }
+
+
+        dto.setEmployeeId(employee.getEmployeeId());
 
 
         return dto;

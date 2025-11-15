@@ -26,9 +26,9 @@ public class AttendanceController {
     @PostMapping("/check-in/{employeeId}")
     public ResponseEntity<AttendanceDto> checkIn(
             @PathVariable String employeeId,
-            @RequestParam(required = false) Double latitude,
-            @RequestParam(required = false) Double longitude,
-            @RequestParam(required = false, defaultValue = "DESKTOP") String deviceType) {
+            @RequestParam(name = "latitude", required = false) Double latitude,
+            @RequestParam(name = "longitude", required = false) Double longitude,
+            @RequestParam(name = "deviceType" ,required = false, defaultValue = "DESKTOP") String deviceType) {
 
         try {
             AttendanceDto attendance;

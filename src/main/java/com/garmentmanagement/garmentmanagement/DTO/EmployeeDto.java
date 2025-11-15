@@ -35,6 +35,8 @@ public class EmployeeDto {
     private Long managerId;
     private String managerName;
     private String status;
+    private Long userId;
+
 
     // ✅ NEW: Work Type Field
     private String workType;
